@@ -1,0 +1,15 @@
+# Qui vengono specificati i nomi dei file che devono essere esclusi da git
+
+# Cartelle
+.vscode
+.DS_Store
+
+# Files in base all'estensione
+*.exe
+*.x
+*.pdf
+
+# Files per nome (i nomi ci si aspetta abbiano gli eseguibili)
+geom
+integrator
+main
