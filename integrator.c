@@ -41,10 +41,32 @@ int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o
         printf("%le %le\n", verl_coords[i], verl_vels[i]);
     }
 
+    printf("\n");
+    for (int i = 0; i < N_DIM; i++)
+    {
+        printf("%le\n", *(force_old_ptr + i));
+    }
+
+    printf("\n");
+
+    velverlet_ndim(dt, verl_coords, verl_vels, m, &force_old_ptr, f_arm_3d);
+    for (int i = 0; i < N_DIM; i++)
+    {
+        printf("%le %le\n", verl_coords[i], verl_vels[i]);
+    }
+
     Output atteso:
     9.999995e-01 -9.999997e-04
     9.999995e-01 -9.999997e-04
     9.999995e-01 -9.999997e-04
+
+    -9.999995e-01
+    -9.999995e-01
+    -9.999995e-01
+
+    9.999980e-01 -1.999999e-03
+    9.999980e-01 -1.999999e-03
+    9.999980e-01 -1.999999e-03
     */
     double force_new[N_DIM] = {0.};
 
@@ -74,9 +96,12 @@ int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o
     {
         // Parentesi aggiuntive messe per ordine
         *(vel + i) = *(vel + i) + (1. / (2. * m)) * dt * (*(*f_o + i) + *(force_new + i));
-    }
 
-    *f_o = force_new;
+        // Utilizzare malloc nella funzione che calcola la forza sarebbe stato dispendioso in termini di prestazioni.
+        // I valori vengono quindi copiati per componente dopo essere stati utilizzati nel conto.
+        // Questo risulta più efficiente assumendo che in numero di componenti è piccolo (cosa che ha senso assumere).
+        *(*f_o + i) = *(force_new + i);
+    }
 
     return 0;
 }
