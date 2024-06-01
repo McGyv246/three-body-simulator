@@ -3,17 +3,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N_DIM 3 // TODO: remove
+#define N_DIM 3
 
-int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o, double *(F)(double *));
-double *f_arm_3d(double *coords);
+int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o, void (*F)(double *, double *));
+void f_arm_3d(double *coords, double *force);
 
 int main()
 {
     // Test velverlet_ndim
     double dt = 0.001;
-    double verl_coords[N_DIM] = {1., 1., 1.};
-    double verl_vels[N_DIM] = {0., 0., 0.};
+    double verl_coords[3] = {1., 1., 1.};
+    double verl_vels[3] = {0., 0., 0.};
     double m = 1;
     double *force_old_ptr = NULL;
 
@@ -33,20 +33,43 @@ int main()
     return 0;
 }
 
-int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o, double *(F)(double *))
+/**
+ * Funzione che utilizza l'algoritmo Velocity Verlet ad N_DIM (macro definita nel file integrator.c) dimensioni per calcolare posizioni
+ * e velocità di un corpo soggetto a forza specificata.
+ *
+ * @param dt Differenziale del tempo utilizzato per l'integrazione numerica
+ * @param coord Puntatore ad un array di double contenente le N_DIM componenti della posizione del corpo.
+ * La funzione lo aggiorna con le coordinate nuove.
+ * @param vel Puntatore ad un array di double contenente le N_DIM componenti della velocità del corpo.
+ * La funzione lo aggiorna con le velocità nuove.
+ * @param m Double contenente la massa del corpo considerato.
+ * @param f_o Puntatore a puntatore a un array di double che contiene le componenti della forza del passo precedente.
+ * Per utilizzarlo correttamente bisogna inizializzare un puntatore a double a NULL e poi passarlo come riferimento
+ * (oppure bisogna creare un nuovo puntatore che punta al primo e passare quello).
+ * Ad esempio: double *f_o = NULL; velverlet_ndim(..., &f_o, ...);
+ * @param F Funzione che calcola la forza in N_DIM dimensioni.
+ * Richiede un puntatore a un vettore di N_DIM coordinate e restituisce un vettore di N_DIM componenti della forza.
+ *
+ * @note f_o dovrà essere liberato con la funzione free() dato che allocato nell'heap.
+ * Se si ridefinisce N_DIM ad un valore maggiore di 0 la funzione funziona lo stesso (solo se anche F funziona lo stesso).
+ */
+int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o, void (*F)(double *, double *))
 {
-    double *force_new = NULL;
+    double force_new[N_DIM] = {0.};
 
     // Questo permette di non sapere come va inizializzata la variabile da fuori,
     // basta inizializzare un puntatore a double come NULL e poi passare
     // un puntatore a quel puntatore.
     if (*f_o == NULL)
     {
-        *f_o = F(coord);
+        *f_o = (double *)malloc(sizeof(double) * N_DIM);
         if (*f_o == NULL)
         {
+            fprintf(stderr, "Si è verificato un errore nell'allocazione di memoria.");
             return -1;
         }
+
+        F(coord, *f_o);
     }
 
     for (int i = 0; i < N_DIM; i++)
@@ -54,7 +77,7 @@ int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o
         *(coord + i) = *(coord + i) + dt * (*(vel + i)) + (1. / (2. * m)) * dt * dt * (*(*f_o + i));
     }
 
-    force_new = F(coord);
+    F(coord, force_new);
 
     for (int i = 0; i < N_DIM; i++)
     {
@@ -68,18 +91,12 @@ int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o
 }
 
 // FUNZIONE DI TEST, DA RIMUOVERE
-double *f_arm_3d(double *coords)
+void f_arm_3d(double *coords, double *force)
 {
-    double *force = (double *)malloc(sizeof(double) * N_DIM);
-    if (force == NULL)
-    {
-        return force;
-    }
+    const unsigned int n_dim = 3;
 
-    for (int i = 0; i < N_DIM; i++)
+    for (int i = 0; i < n_dim; i++)
     {
         *(force + i) = -*(coords + i);
     }
-
-    return force;
 }
