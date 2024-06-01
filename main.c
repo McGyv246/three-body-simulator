@@ -26,7 +26,7 @@ int main(int argc, char const *argv[])
 {
     FILE *inFile;
     int ans;
-    struct physical_system system;
+    struct physical_system system = {.N = -1, .G = -1, .dt = -1, .tdump = -1, .T = -1};
     
     // errore in caso non sia stato letto alcun file in input
     if (argc < 2)
@@ -49,6 +49,7 @@ int main(int argc, char const *argv[])
         if ( ans == -2 )
         {
             fprintf(stderr, "Errore nella lettura del file in input: il file deve contenere N, G, dt, tdump e T");
+            return 1;
         }
     }
     
@@ -121,7 +122,7 @@ int read_input(FILE *inFile, struct physical_system *system)
     }
 
     // controllo che siano stati letti i dati necessari per l'esecuzione del programma
-    if ( !system->N || !system->G || !system->dt || !system->tdump || !system->T )
+    if ( system->N == -1 || system->G == -1 || system->dt == -1 || system->tdump == -1 || system->T == -1 )
     {
         return -2;
     }
