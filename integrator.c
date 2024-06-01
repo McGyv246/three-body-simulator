@@ -5,34 +5,6 @@
 
 #define N_DIM 3
 
-int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o, void (*F)(double *, double *));
-void f_arm_3d(double *coords, double *force);
-
-int main()
-{
-    // Test velverlet_ndim
-    double dt = 0.001;
-    double verl_coords[3] = {1., 1., 1.};
-    double verl_vels[3] = {0., 0., 0.};
-    double m = 1;
-    double *force_old_ptr = NULL;
-
-    velverlet_ndim(dt, verl_coords, verl_vels, m, &force_old_ptr, f_arm_3d);
-    for (int i = 0; i < N_DIM; i++)
-    {
-        printf("%le %le\n", verl_coords[i], verl_vels[i]);
-    }
-    /*
-    Output atteso:
-    9.999995e-01 -9.999997e-04
-    9.999995e-01 -9.999997e-04
-    9.999995e-01 -9.999997e-04
-    */
-    // fine test velverlet_ndim
-
-    return 0;
-}
-
 /**
  * Funzione che utilizza l'algoritmo Velocity Verlet ad N_DIM (macro definita nel file integrator.c) dimensioni per calcolare posizioni
  * e velocità di un corpo soggetto a forza specificata.
@@ -55,6 +27,25 @@ int main()
  */
 int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o, void (*F)(double *, double *))
 {
+    /*
+    Codice di test:
+    double dt = 0.001;
+    double verl_coords[3] = {1., 1., 1.};
+    double verl_vels[3] = {0., 0., 0.};
+    double m = 1;
+    double *force_old_ptr = NULL;
+
+    velverlet_ndim(dt, verl_coords, verl_vels, m, &force_old_ptr, f_arm_3d);
+    for (int i = 0; i < N_DIM; i++)
+    {
+        printf("%le %le\n", verl_coords[i], verl_vels[i]);
+    }
+
+    Output atteso:
+    9.999995e-01 -9.999997e-04
+    9.999995e-01 -9.999997e-04
+    9.999995e-01 -9.999997e-04
+    */
     double force_new[N_DIM] = {0.};
 
     // Questo permette di non sapere come va inizializzata la variabile da fuori,
