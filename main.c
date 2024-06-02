@@ -101,6 +101,9 @@ int main(int argc, char const *argv[])
             velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.N, &grav_force, f_o);
         }
     }
+    
+    fclose(outSystem);
+    fclose(outEnergies);
 
     free(system.masses);
     free(system.coord);
