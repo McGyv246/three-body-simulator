@@ -6,10 +6,11 @@
 #define SPATIAL_DIM 3
 
 /**
- * Funzione che utilizza l'algoritmo Velocity Verlet ad SPATIAL_DIM (macro definita nel file integrator.c) dimensioni per calcolare 
+ * Funzione che utilizza l'algoritmo Velocity Verlet ad SPATIAL_DIM (macro definita nel file integrator.c) dimensioni per calcolare
  * posizioni e velocità di un sistema nBodies particelle soggette a forza specificata.
  *
  * @param dt Differenziale del tempo utilizzato per l'integrazione numerica
+ * @param forceConst Double della costante da utilizzare nel calcolo della forza
  * @param coord Puntatore ad un array di double contenente SPATIAL_DIM * nBodies elementi che corrispondono alle SPATIAL_DIM componenti
  * delle posizioni di nBodies corpi.
  * La funzione lo aggiorna con le coordinate nuove.
@@ -21,12 +22,12 @@
  * @param nBodies Numero intero del numero di corpi considerato nel sistema.
  * @param F Funzione che calcola la forza in SPATIAL_DIM dimensioni di nBodies corpi.
  * Richiede:
- * - un puntatore ad un vettore di SPATIAL_DIM * nBodies elementi double che contiene le SPATIAL_DIM componenti delle posizioni di 
+ * - un puntatore ad un vettore di SPATIAL_DIM * nBodies elementi double che contiene le SPATIAL_DIM componenti delle posizioni di
  * nBodies corpi.
  * - un puntatore ad un vettore di nBodies elementi double che contiene le masse dei corpi in studio.
  * - un numero double che contiene la costante di riferimento per il calcolo della forza.
  * - un numero intero che contiene il numero di corpi considerato nel sistema.
- * - un puntatore a un vettore di SPATIAL_DIM * nBodies elementi double in cui la funzione inserisce le SPATIAL_DIM componenti delle 
+ * - un puntatore a un vettore di SPATIAL_DIM * nBodies elementi double in cui la funzione inserisce le SPATIAL_DIM componenti delle
  * forze applicate a nBodies corpi.
  * @param f_o Puntatore a puntatore a un array di double che contiene le componenti della forza del passo precedente.
  * Per utilizzarlo correttamente bisogna inizializzare un puntatore a double con NULL e poi passarlo come riferimento
