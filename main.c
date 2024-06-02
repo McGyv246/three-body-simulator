@@ -101,7 +101,7 @@ int main(int argc, char const *argv[])
             velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.N, &grav_force, f_o);
         }
     }
-    
+
     fclose(outSystem);
     fclose(outEnergies);
 
@@ -271,8 +271,10 @@ void print_energies(FILE *outFile, struct physicalSystem *system)
  * agenti tra questi nel dato istante
  * 
  * @param coord Puntatore al vettore di double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ..., 
- * @param force Puntatore al vettore di double in cui salvare le forze calcolate
+ * @param masses Puntatore al vettore di double contenente le masse dei corpi nel sistema
+ * @param G Costante di gravitazione considerata per il calcolo della forza gravitazionale
  * @param N Numero di corpi che compongono il sistema considerato
+ * @param force Puntatore al vettore di double in cui salvare le forze calcolate
  */
 void grav_force(double *coord, double *masses, double G, int N, double *force)
 {
