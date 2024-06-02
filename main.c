@@ -29,7 +29,7 @@ struct physicalSystem{
 };
 
 int read_input(FILE *inFile, struct physicalSystem *system);
-void print_system(FILE *outFile, struct physicalSystem *system);
+void print_system(FILE *outFile, struct physicalSystem *system, double *force);
 void print_energies(FILE *outFile, struct physicalSystem *system);
 void grav_force(double *coord, double *masses, double G, int N, double *force);
 
@@ -88,12 +88,15 @@ int main(int argc, char const *argv[])
         fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
         return 1;
     }
+
+    //calcolo la forza iniziale per ottenere l'accelerazione iniziale
+    grav_force(system.coord, system.masses, system.G, system.N, force);
     
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
     int totPrint = (int)(system.T/system.tdump);
     for( int i=0; i<totPrint; i++ )
     {
-        print_system(outSystem, &system);
+        print_system(outSystem, &system, force);
         print_energies(outEnergies, &system);
 
         for( int j=0; j<system.tdump; j++ )
@@ -223,9 +226,18 @@ int read_input(FILE *inFile, struct physicalSystem *system)
  * @param outFile Puntatore al file in cui stampare posizioni, velocità e accelerazioni del sistema
  * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema
  */
-void print_system(FILE *outFile, struct physicalSystem *system)
+void print_system(FILE *outFile, struct physicalSystem *system, double *force)
 {
     static double t=0.;
+
+    for( int i=0; i<system->N; i++ )
+    {
+        for( int j=0; j<SPATIAL_DIM; j++)
+        {
+            system->acc[ j + SPATIAL_DIM * i ] = force[ j + SPATIAL_DIM * i ]/system->masses[i];            
+        }
+    }
+
     fprintf(outFile, "%lf ", t);
 
     for( int i=0; i<system->N*SPATIAL_DIM; i++)
