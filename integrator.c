@@ -25,93 +25,113 @@
  * @note f_o dovrà essere liberato con la funzione free() dato che allocato nell'heap.
  * Se si ridefinisce N_DIM ad un valore maggiore di 0 la funzione funziona lo stesso (solo se anche F funziona lo stesso).
  */
-int velverlet_ndim(double dt, double *coord, double *vel, double m, double **f_o, void (*F)(double *, double *))
+int velverlet_ndim(double dt, double *coord, double *vel, double *m, double *force, double nBodies, void (*F)(double *, double *, int), double **f_o)
 {
     /*
     Codice di test:
     double dt = 0.001;
-    double verl_coords[3] = {1., 1., 1.};
-    double verl_vels[3] = {0., 0., 0.};
-    double m = 1;
+    double verl_coords[9] = {1., 1., 1., 1., 1., 1., 1., 1., 1.};
+    double verl_vels[9] = {0., 0., 0., 0., 0., 0., 0., 0., 0.};
+    double m[3] = {1., 1., 1.};
     double *force_old_ptr = NULL;
+    int nBody = 3;
 
-    velverlet_ndim(dt, verl_coords, verl_vels, m, &force_old_ptr, f_arm_3d);
-    for (int i = 0; i < N_DIM; i++)
+    double *force = (double *)malloc(sizeof(double) * N_DIM * nBody);
+
+    velverlet_ndim(dt, verl_coords, verl_vels, m, force, nBody, f_3d_nBodies, &force_old_ptr);
+    for (int i = 0; i < N_DIM * nBody; i++)
     {
-        printf("%le %le\n", verl_coords[i], verl_vels[i]);
+        printf("%d %le %le\n", i, verl_coords[i], verl_vels[i]);
     }
 
     printf("\n");
-    for (int i = 0; i < N_DIM; i++)
+    for (int i = 0; i < N_DIM * nBody; i++)
     {
-        printf("%le\n", *(force_old_ptr + i));
+        printf("%d %le\n", i, *(force_old_ptr + i));
     }
 
     printf("\n");
 
-    velverlet_ndim(dt, verl_coords, verl_vels, m, &force_old_ptr, f_arm_3d);
-    for (int i = 0; i < N_DIM; i++)
+    velverlet_ndim(dt, verl_coords, verl_vels, m, force, nBody, f_3d_nBodies, &force_old_ptr);
+    for (int i = 0; i < N_DIM * nBody; i++)
     {
-        printf("%le %le\n", verl_coords[i], verl_vels[i]);
+        printf("%d %le %le\n", i, verl_coords[i], verl_vels[i]);
     }
 
     Output atteso:
-    9.999995e-01 -9.999997e-04
-    9.999995e-01 -9.999997e-04
-    9.999995e-01 -9.999997e-04
+    0 9.999995e-01 -9.999997e-04
+    1 9.999995e-01 -9.999997e-04
+    2 9.999995e-01 -9.999997e-04
+    3 9.999995e-01 -9.999997e-04
+    4 9.999995e-01 -9.999997e-04
+    5 9.999995e-01 -9.999997e-04
+    6 9.999995e-01 -9.999997e-04
+    7 9.999995e-01 -9.999997e-04
+    8 9.999995e-01 -9.999997e-04
 
-    -9.999995e-01
-    -9.999995e-01
-    -9.999995e-01
+    0 -9.999995e-01
+    1 -9.999995e-01
+    2 -9.999995e-01
+    3 -9.999995e-01
+    4 -9.999995e-01
+    5 -9.999995e-01
+    6 -9.999995e-01
+    7 -9.999995e-01
+    8 -9.999995e-01
 
-    9.999980e-01 -1.999999e-03
-    9.999980e-01 -1.999999e-03
-    9.999980e-01 -1.999999e-03
+    0 9.999980e-01 -1.999999e-03
+    1 9.999980e-01 -1.999999e-03
+    2 9.999980e-01 -1.999999e-03
+    3 9.999980e-01 -1.999999e-03
+    4 9.999980e-01 -1.999999e-03
+    5 9.999980e-01 -1.999999e-03
+    6 9.999980e-01 -1.999999e-03
+    7 9.999980e-01 -1.999999e-03
+    8 9.999980e-01 -1.999999e-03
     */
-    double force_new[N_DIM] = {0.};
 
     // Questo permette di non sapere come va inizializzata la variabile da fuori,
     // basta inizializzare un puntatore a double come NULL e poi passare
     // un puntatore a quel puntatore.
     if (*f_o == NULL)
     {
-        *f_o = (double *)malloc(sizeof(double) * N_DIM);
+        *f_o = (double *)malloc(sizeof(double) * N_DIM * nBodies);
         if (*f_o == NULL)
         {
             fprintf(stderr, "Si è verificato un errore nell'allocazione di memoria.");
             return -1;
         }
 
-        F(coord, *f_o);
+        F(coord, *f_o, nBodies);
     }
 
-    for (int i = 0; i < N_DIM; i++)
+    for (int i = 0; i < N_DIM * nBodies; i++)
     {
-        *(coord + i) = *(coord + i) + dt * (*(vel + i)) + (1. / (2. * m)) * dt * dt * (*(*f_o + i));
+        double currentM = *(m + (int)(i / nBodies));
+        // Parentesi aggiuntive messe per ordine intorno alle dereferenziazioni dei puntatori in una moltiplicazione
+        *(coord + i) = *(coord + i) + dt * (*(vel + i)) + 1. / (2. * currentM) * dt * dt * (*(*f_o + i));
     }
 
-    F(coord, force_new);
+    F(coord, force, nBodies);
 
-    for (int i = 0; i < N_DIM; i++)
+    for (int i = 0; i < N_DIM * nBodies; i++)
     {
-        // Parentesi aggiuntive messe per ordine
-        *(vel + i) = *(vel + i) + (1. / (2. * m)) * dt * (*(*f_o + i) + *(force_new + i));
+        double currentM = *(m + (int)(i / nBodies));
+        *(vel + i) = *(vel + i) + 1. / (2. * currentM) * dt * (*(*f_o + i) + *(force + i));
 
         // Utilizzare malloc nella funzione che calcola la forza sarebbe stato dispendioso in termini di prestazioni.
         // I valori vengono quindi copiati per componente dopo essere stati utilizzati nel conto.
         // Questo risulta più efficiente assumendo che in numero di componenti è piccolo (cosa che ha senso assumere).
-        *(*f_o + i) = *(force_new + i);
+        *(*f_o + i) = *(force + i);
     }
 
     return 0;
 }
 
 // FUNZIONE DI TEST, DA RIMUOVERE
-void f_arm_3d(double *coords, double *force)
+void f_3d_nBodies(double *coords, double *force, int nBodies)
 {
-    const unsigned int n_dim = 3;
-
-    for (int i = 0; i < n_dim; i++)
+    for (int i = 0; i < N_DIM * nBodies; i++)
     {
         *(force + i) = -*(coords + i);
     }
