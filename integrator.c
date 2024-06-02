@@ -31,7 +31,7 @@
  * @note f_o dovrà essere liberato con la funzione free() dato che allocato nell'heap.
  * Se si ridefinisce SPATIAL_DIM ad un valore maggiore di 0 la funzione funziona lo stesso (solo se anche F funziona lo stesso).
  */
-int velverlet_ndim_npart(double dt, double *coord, double *vel, double *m, double *force, int nBodies, void (*F)(double *, double *, int), double **f_o)
+int velverlet_ndim_npart(double dt, double G, double *coord, double *vel, double *m, double *force, int nBodies, void (*F)(double *, double *, double, int, double *), double **f_o)
 {
     /*
     Codice di test:
@@ -108,7 +108,7 @@ int velverlet_ndim_npart(double dt, double *coord, double *vel, double *m, doubl
             return -1;
         }
 
-        F(coord, *f_o, nBodies);
+        F(coord, m, G, nBodies, *f_o);
     }
 
     for (int i = 0; i < SPATIAL_DIM * nBodies; i++)
@@ -118,7 +118,7 @@ int velverlet_ndim_npart(double dt, double *coord, double *vel, double *m, doubl
         *(coord + i) = *(coord + i) + dt * (*(vel + i)) + 1. / (2. * currentM) * dt * dt * (*(*f_o + i));
     }
 
-    F(coord, force, nBodies);
+    F(coord, m, G, nBodies, force);
 
     for (int i = 0; i < SPATIAL_DIM * nBodies; i++)
     {

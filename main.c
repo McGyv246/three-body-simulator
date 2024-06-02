@@ -1,7 +1,9 @@
-// gcc -std=c99 -lm -Wall -Wpedantic -O3 main.c -o main.exe
+// gcc -std=c99 -lm -Wall -Wpedantic -O3 main.c integrator.c geom.c -o main.exe
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+
 #include "geom.h"
 #include "integrator.h"
 
@@ -21,7 +23,7 @@ struct physicalSystem{
     double tdump;
     double T;
     double *masses;
-    double *pos;
+    double *coord;
     double *vel;
     double *acc;
 };
@@ -29,7 +31,7 @@ struct physicalSystem{
 int read_input(FILE *inFile, struct physicalSystem *system);
 void print_system(FILE *outFile, struct physicalSystem *system);
 void print_energies(FILE *outFile, struct physicalSystem *system);
-void grav_force(double *pos, double *masses, int G, int N, double *force);
+void grav_force(double *coord, double *masses, double G, int N, double *force);
 
 int main(int argc, char const *argv[]) 
 {
@@ -76,7 +78,16 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    system.acc = (double *)malloc( system.N * SPATIAL_DIM * sizeof(double) );
+    if ((system.acc = (double *)malloc( system.N * SPATIAL_DIM * sizeof(double) )) == NULL) {
+        fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
+        return 1;
+    }
+
+    double *force, **f_o = NULL;
+    if (( force = (double *)malloc( system.N * SPATIAL_DIM * sizeof(double) )) == NULL) {
+        fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
+        return 1;
+    }
     
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
     int totPrint = (int)(system.T/system.tdump);
@@ -87,14 +98,15 @@ int main(int argc, char const *argv[])
 
         for( int j=0; j<system.tdump; j++ )
         {
-            velverlet_ndim(system.dt,system.pos,system.vel,system.masses,system.acc);
+            velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.N, &grav_force, f_o);
         }
     }
 
     free(system.masses);
-    free(system.pos);
+    free(system.coord);
     free(system.vel);
     free(system.acc);
+    free(force);
 
     return 0;
 }
@@ -166,15 +178,15 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     static double *masses = NULL;
     if(!masses) masses = (double *)malloc( system->N * sizeof(double) );
 
-    static double *pos = NULL;
-    if(!pos) pos = (double *)malloc( system->N * SPATIAL_DIM * sizeof(double) );
+    static double *coord = NULL;
+    if(!coord) coord = (double *)malloc( system->N * SPATIAL_DIM * sizeof(double) );
 
     static double *vel = NULL;
     if(!vel) vel = (double *)malloc( system->N * SPATIAL_DIM * sizeof(double) );
 
     // assegnazione dei puntatori appena inizializzati ai puntatori della struct
     system->masses = masses;
-    system->pos = pos;
+    system->coord = coord;
     system->vel = vel;
     
     // lettura del numero di corpo di cui si stanno leggendo posizioni e velocità di partenza
@@ -187,7 +199,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     // ciclo per la lettura della posizione di partenza del corpo specificato da bodyNumber
     for (int i=0; i<SPATIAL_DIM; i++)
     {   
-        sscanf(line + nTotChar, "%lf %n", system->pos + i + SPATIAL_DIM * (bodyNumber-1), &nChar);
+        sscanf(line + nTotChar, "%lf %n", system->coord + i + SPATIAL_DIM * (bodyNumber-1), &nChar);
         nTotChar += nChar;
     }
 
@@ -211,24 +223,24 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 void print_system(FILE *outFile, struct physicalSystem *system)
 {
     static double t=0.;
-    printf("%lf ", t);
+    fprintf(outFile, "%lf ", t);
 
     for( int i=0; i<system->N*SPATIAL_DIM; i++)
     {
-        printf("%lf ", system->pos[i]);
+        fprintf(outFile, "%lf ", system->coord[i]);
     }
 
     for( int i=0; i<system->N*SPATIAL_DIM; i++)
     {
-        printf("%lf ", system->vel[i]);
+        fprintf(outFile, "%lf ", system->vel[i]);
     }    
 
     for( int i=0; i<system->N*SPATIAL_DIM; i++)
     {
-        printf("%lf ", system->acc[i]);
+        fprintf(outFile, "%lf ", system->acc[i]);
     }        
     
-    printf("\n");
+    fprintf(outFile, "\n");
 
     t++;
 }
@@ -245,23 +257,27 @@ void print_energies(FILE *outFile, struct physicalSystem *system)
     double kEnergy, potEnergy, totEnergy;
     
     kEnergy = Ekin(system->vel, system->N);
-    potEnergy = Epot(system->pos, system->G, system->N);
+    potEnergy = Epot(system->coord, system->G, system->N);
     totEnergy = kEnergy + potEnergy;
 
-    printf("%16.9lf %16.9lf %16.9lf\n", kEnergy, potEnergy, totEnergy);
+    fprintf(outFile, "%16.9lf %16.9lf %16.9lf\n", kEnergy, potEnergy, totEnergy);
 }
 
 /**
  * Funzione che, date le posizioni di un numero di corpi specificato in un dato istante, calcola le accelerazioni gravitazionali
  * agenti tra questi nel dato istante
  * 
- * @param pos Puntatore al vettore di double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ..., 
+ * @param coord Puntatore al vettore di double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ..., 
  * @param force Puntatore al vettore di double in cui salvare le forze calcolate
  * @param N Numero di corpi che compongono il sistema considerato
  */
-void grav_force(double *pos, double *masses, int G, int N, double *force)
+void grav_force(double *coord, double *masses, double G, int N, double *force)
 {
     double forceComp;
+    for( int i=0; i<SPATIAL_DIM*N; i++)
+    {
+        force[i] = 0;
+    }
     for( int i=0; i<N; i++ )
     {
         for( int j=i+1; j<N; j++ )
@@ -269,8 +285,8 @@ void grav_force(double *pos, double *masses, int G, int N, double *force)
             for (int k=0; k<SPATIAL_DIM; k++)
             {   
                 
-                forceComp = -G * masses[i] * masses[j] * vec_dist(*(pos +i ), *(pos + j * SPATIAL_DIM))
-                / pow(dist(*(pos + i), *(pos + j * SPATIAL_DIM)),3);
+                forceComp = -G * masses[i] * masses[j] * vec_dist((coord +i ), (coord + j * SPATIAL_DIM))
+                / pow(dist((coord + i), (coord + j * SPATIAL_DIM)),3);
                 *(force + k + i * SPATIAL_DIM) += forceComp;
                 *(force + k + j * SPATIAL_DIM) -= forceComp;
             }
