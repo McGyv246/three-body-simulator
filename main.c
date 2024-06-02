@@ -8,25 +8,34 @@
 #define MAX_LEN 1024
 #define SPATIAL_DIM 3
 
-// creazione della struct physical system, contenente le variabili di interesse del sistema e le posizioni e velocità dei corpi 
+// per rendere più facile l'uso del programma poniamo i nomi dei file di output come macro
+#define OUTPUT_SYSTEM "traj.dat"
+#define OUTPUT_ENERGIES "energies.dat"
+
+// creazione della struct physicalSystem, contenente le variabili di interesse del sistema e le posizioni e velocità dei corpi 
 // ad un dato istante
-struct physical_system{
+struct physicalSystem{
     int N;
     double G;
     double dt;
     double tdump;
     double T;
+    double *masses;
     double *pos;
     double *vel;
 };
 
-int read_input(FILE *inFile, struct physical_system *system);
+int read_input(FILE *inFile, struct physicalSystem *system);
+// - DA CONTROLLARE - qui non so se abbia più senso passare come copia o come puntatore, perché
+// di base basterebbe passare come copia, però in questo modo non andiamo ad occupare spazio in memoria inutilmente?
+void print_system(FILE *outFile, struct physicalSystem *system);
+void print_energies(FILE *outFile, struct physicalSystem *system);
 
 int main(int argc, char const *argv[]) 
 {
     FILE *inFile;
     int ans;
-    struct physical_system system = {.N = -1, .G = -1, .dt = -1, .tdump = -1, .T = -1};
+    struct physicalSystem system = {.N = -1, .G = -1, .dt = -1, .tdump = -1, .T = -1};
     
     // errore in caso non sia stato letto alcun file in input
     if (argc < 2)
@@ -37,7 +46,7 @@ int main(int argc, char const *argv[])
 
     inFile = fopen(argv[1], "r");
     // errore in caso ci siano stati problemi nell'apertura del file
-    if (inFile == NULL)
+    if (!inFile)
     {
         fprintf(stderr, "Impossibile aprire il file: %s\n", argv[1]);
         return 1;
@@ -52,14 +61,27 @@ int main(int argc, char const *argv[])
             return 1;
         }
     }
+
+    fclose(inFile);   
     
-    // -DA TOGLIERE- serve solo per stampare i dati di input in modo da capire se tutto funzioni
-    for (int i=0; i<SPATIAL_DIM*system.N; i++)
+    
+    FILE *outSystem;
+    FILE *outEnergies;
+    outSystem = fopen(OUTPUT_SYSTEM, "w");
+    outEnergies = fopen(OUTPUT_ENERGIES, "w");
+
+    // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
+    double *f_o = (double *)malloc( SPATIAL_DIM * sizeof(double) );
+    for( int i=0; i<system.T/system.tdump; i++ )
     {
-        printf("%lf\t", system.vel[i]);
+        print_system(outSystem, &system);
+        print_energies(outEnergies, &system);
+
+        for( int j=0; j<system.tdump; j++ )
+        {
+            velverlet_ndim(system.dt,system.pos,system.vel,system.masses,)
+        }
     }
-    
-    fclose(inFile);
 
     free(system.pos);
     free(system.vel);
@@ -75,7 +97,7 @@ int main(int argc, char const *argv[])
  * 
  * @return -1 per End of File; -2 in caso di errore; 0 di default
  */
-int read_input(FILE *inFile, struct physical_system *system)
+int read_input(FILE *inFile, struct physicalSystem *system)
 {
     char line[MAX_LEN], str[5];
     char var[6];
@@ -131,17 +153,26 @@ int read_input(FILE *inFile, struct physical_system *system)
 
     // codice che permette di puntare in modo "static" alla heap, in questo modo creiamo due
     // vettori di dimensione dinamica direttamente nella funzione (che vengono inizializzati solo una volta per esecuzione)
+    static double *masses = NULL;
+    if(!masses) masses = (double *)malloc( system->N * sizeof(double) );
+
     static double *pos = NULL;
-    if(!pos) pos = (double *)malloc( system->N * SPATIAL_DIM * sizeof(double) ); 
+    if(!pos) pos = (double *)malloc( system->N * SPATIAL_DIM * sizeof(double) );
+
     static double *vel = NULL;
     if(!vel) vel = (double *)malloc( system->N * SPATIAL_DIM * sizeof(double) );
 
     // assegnazione dei puntatori appena inizializzati ai puntatori della struct
+    system->masses = masses;
     system->pos = pos;
     system->vel = vel;
     
     // lettura del numero di corpo di cui si stanno leggendo posizioni e velocità di partenza
     sscanf(line, "%d %n", &bodyNumber, &nTotChar);
+
+    // lettura della massa del corpo specificato da bodyNumber
+    sscanf(line + nTotChar, "%lf %n", system->masses + (bodyNumber-1), &nChar);
+    nTotChar += nChar;
    
     // ciclo per la lettura della posizione di partenza del corpo specificato da bodyNumber
     for (int i=0; i<SPATIAL_DIM; i++)
@@ -159,3 +190,12 @@ int read_input(FILE *inFile, struct physical_system *system)
     
     return 0;
 }
+
+/**
+ * Funzione che date le condizioni del sistema in un dato istante, stampa le posizioni, le velocità e le accelerazioni
+ * del dato istante nel file specificato in outFile
+ * 
+ * @param outFile puntatore al file in cui stampare posizioni, velocità e accelerazioni del sistema
+ * @param system puntatore alla struct contenente tutte le variabili in gioco nel sistema
+ */
+void print_system(FILE *outFile, struct physicalSystem *system)
