@@ -73,6 +73,10 @@ int main(int argc, char const *argv[])
     outSystem = fopen(OUTPUT_SYSTEM, "w");
     outEnergies = fopen(OUTPUT_ENERGIES, "w");
 
+    print_header(outSystem, &system, "#format: time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
+    print_header(outEnergies, &system, "#format:  kinetic energy,  potential energy,  total energy");
+
+
     if (outSystem == NULL || outEnergies == NULL)
     {
         fprintf(stderr, "Errore nell'apertura dei file di output");
@@ -238,7 +242,6 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 void print_system(FILE *outFile, struct physicalSystem *system, double *force)
 {
     static double t=0.;
-    print_header(outFile, system, "#format: time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
 
     fprintf(outFile, "%lf ", t);
 
@@ -272,8 +275,6 @@ void print_system(FILE *outFile, struct physicalSystem *system, double *force)
 void print_energies(FILE *outFile, struct physicalSystem *system)
 {
     double kEnergy, potEnergy, totEnergy;
-
-    print_header(outFile, system, "#format:  kinetic energy,  potential energy,  total energy");
     
     kEnergy = Ekin(system->vel, system->masses, system->N);
     potEnergy = Epot(system->coord, system->masses, system->G, system->N);
