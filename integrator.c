@@ -138,7 +138,7 @@ int velverlet_ndim_npart(double dt, double forceConst, double *coord, double *ve
                 // Utilizzare malloc nella funzione che calcola la forza sarebbe stato dispendioso in termini di prestazioni.
                 // I valori vengono quindi copiati per componente dopo essere stati utilizzati nel conto.
                 // Questo risulta più efficiente assumendo che in numero di componenti è piccolo (cosa che ha senso assumere).
-                *(*f_o + i) = force[j + i * SPATIAL_DIM];
+                *(*f_o + j + i * SPATIAL_DIM) = force[j + i * SPATIAL_DIM];
             }
         }
 
