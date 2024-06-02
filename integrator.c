@@ -26,7 +26,7 @@
  * @note f_o dovrà essere liberato con la funzione free() dato che allocato nell'heap.
  * Se si ridefinisce SPATIAL_DIM ad un valore maggiore di 0 la funzione funziona lo stesso (solo se anche F funziona lo stesso).
  */
-int velverlet_ndim(double N, double dt, double *coord, double *vel, double m, double **f_o, void (*F)(double *, double *))
+int velverlet_ndim(int N, double dt, double *coord, double *vel, double m, double **f_o, void (*F)(double *, double *))
 {
     /*
     Codice di test:

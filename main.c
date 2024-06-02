@@ -23,13 +23,13 @@ struct physicalSystem{
     double *masses;
     double *pos;
     double *vel;
+    double *acc;
 };
 
 int read_input(FILE *inFile, struct physicalSystem *system);
-// - DA CONTROLLARE - qui non so se abbia più senso passare come copia o come puntatore, perché
-// di base basterebbe passare come copia, però in questo modo non andiamo ad occupare spazio in memoria inutilmente?
 void print_system(FILE *outFile, struct physicalSystem *system);
 void print_energies(FILE *outFile, struct physicalSystem *system);
+void grav_force(double *pos, double *masses, int G, int N, double *force);
 
 int main(int argc, char const *argv[]) 
 {
@@ -46,7 +46,7 @@ int main(int argc, char const *argv[])
 
     inFile = fopen(argv[1], "r");
     // errore in caso ci siano stati problemi nell'apertura del file
-    if (!inFile)
+    if (inFile == NULL)
     {
         fprintf(stderr, "Impossibile aprire il file: %s\n", argv[1]);
         return 1;
@@ -70,21 +70,31 @@ int main(int argc, char const *argv[])
     outSystem = fopen(OUTPUT_SYSTEM, "w");
     outEnergies = fopen(OUTPUT_ENERGIES, "w");
 
+    if (outSystem == NULL || outEnergies == NULL)
+    {
+        fprintf(stderr, "Errore nell'apertura dei file di output");
+        return 1;
+    }
+
+    system.acc = (double *)malloc( system.N * SPATIAL_DIM * sizeof(double) );
+    
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
-    double *f_o = (double *)malloc( SPATIAL_DIM * sizeof(double) );
-    for( int i=0; i<system.T/system.tdump; i++ )
+    int totPrint = (int)(system.T/system.tdump);
+    for( int i=0; i<totPrint; i++ )
     {
         print_system(outSystem, &system);
         print_energies(outEnergies, &system);
 
         for( int j=0; j<system.tdump; j++ )
         {
-            velverlet_ndim(system.dt,system.pos,system.vel,system.masses,)
+            velverlet_ndim(system.dt,system.pos,system.vel,system.masses,system.acc);
         }
     }
 
+    free(system.masses);
     free(system.pos);
     free(system.vel);
+    free(system.acc);
 
     return 0;
 }
@@ -92,8 +102,8 @@ int main(int argc, char const *argv[])
 /**
  * Funzione che legge i dati di input a partire dal file fornito in esecuzione (ogni volta che viene chiamata legge una riga)
  * 
- * @param inFile puntatore al file fornito in esecuzione
- * @param system puntatore alla struct contenente i dati relativi al sistema fisico considerato
+ * @param inFile Puntatore al file fornito in esecuzione
+ * @param system Puntatore alla struct contenente i dati relativi al sistema fisico considerato
  * 
  * @return -1 per End of File; -2 in caso di errore; 0 di default
  */
@@ -195,7 +205,75 @@ int read_input(FILE *inFile, struct physicalSystem *system)
  * Funzione che date le condizioni del sistema in un dato istante, stampa le posizioni, le velocità e le accelerazioni
  * del dato istante nel file specificato in outFile
  * 
- * @param outFile puntatore al file in cui stampare posizioni, velocità e accelerazioni del sistema
- * @param system puntatore alla struct contenente tutte le variabili in gioco nel sistema
+ * @param outFile Puntatore al file in cui stampare posizioni, velocità e accelerazioni del sistema
+ * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema
  */
 void print_system(FILE *outFile, struct physicalSystem *system)
+{
+    static double t=0.;
+    printf("%lf ", t);
+
+    for( int i=0; i<system->N*SPATIAL_DIM; i++)
+    {
+        printf("%lf ", system->pos[i]);
+    }
+
+    for( int i=0; i<system->N*SPATIAL_DIM; i++)
+    {
+        printf("%lf ", system->vel[i]);
+    }    
+
+    for( int i=0; i<system->N*SPATIAL_DIM; i++)
+    {
+        printf("%lf ", system->acc[i]);
+    }        
+    
+    printf("\n");
+
+    t++;
+}
+
+/**
+ * Funzione che, date le condizioni del sistema in un dato istante, calcola energia cinetica, potenziale e totale nel dato istante.
+ * Stampa poi tutto nel file specificato in outFile
+ * 
+ * @param outFile Puntatore al file in cui stampare energia cinetica, potenziale e totale del sistema in un dato istante
+ * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema
+ */
+void print_energies(FILE *outFile, struct physicalSystem *system)
+{
+    double kEnergy, potEnergy, totEnergy;
+    
+    kEnergy = Ekin(system->vel, system->N);
+    potEnergy = Epot(system->pos, system->G, system->N);
+    totEnergy = kEnergy + potEnergy;
+
+    printf("%16.9lf %16.9lf %16.9lf\n", kEnergy, potEnergy, totEnergy);
+}
+
+/**
+ * Funzione che, date le posizioni di un numero di corpi specificato in un dato istante, calcola le accelerazioni gravitazionali
+ * agenti tra questi nel dato istante
+ * 
+ * @param pos Puntatore al vettore di double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ..., 
+ * @param force Puntatore al vettore di double in cui salvare le forze calcolate
+ * @param N Numero di corpi che compongono il sistema considerato
+ */
+void grav_force(double *pos, double *masses, int G, int N, double *force)
+{
+    double forceComp;
+    for( int i=0; i<N; i++ )
+    {
+        for( int j=i+1; j<N; j++ )
+        {
+            for (int k=0; k<SPATIAL_DIM; k++)
+            {   
+                
+                forceComp = -G * masses[i] * masses[j] * vec_dist(*(pos +i ), *(pos + j * SPATIAL_DIM))
+                / pow(dist(*(pos + i), *(pos + j * SPATIAL_DIM)),3);
+                *(force + k + i * SPATIAL_DIM) += forceComp;
+                *(force + k + j * SPATIAL_DIM) -= forceComp;
+            }
+        }
+    }
+}
