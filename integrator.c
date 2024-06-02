@@ -7,25 +7,31 @@
 
 /**
  * Funzione che utilizza l'algoritmo Velocity Verlet ad N_DIM (macro definita nel file integrator.c) dimensioni per calcolare posizioni
- * e velocità di un corpo soggetto a forza specificata.
+ * e velocità di un sistema nBodies particelle soggette a forza specificata.
  *
  * @param dt Differenziale del tempo utilizzato per l'integrazione numerica
- * @param coord Puntatore ad un array di double contenente le N_DIM componenti della posizione del corpo.
+ * @param coord Puntatore ad un array di double contenente N_DIM * nBodies elementi che corrispondono alle N_DIM componenti delle posizioni di nBodies corpi.
  * La funzione lo aggiorna con le coordinate nuove.
- * @param vel Puntatore ad un array di double contenente le N_DIM componenti della velocità del corpo.
+ * @param vel Puntatore ad un array di double contenente N_DIM * nBodies elementi che corrispondono alle N_DIM componenti delle velocità di nBodies corpi.
  * La funzione lo aggiorna con le velocità nuove.
- * @param m Double contenente la massa del corpo considerato.
+ * @param m Puntatore ad un array di double di nBodies elementi contenente le masse dei corpi considerati.
+ * @param force Puntatore ad un array di double di N_DIM * nBodies elementi che corrispondono alle N_DIM componenti delle forze applicate a nBodies corpi.
+ * Deve essere passato da fuori e la funzione lo sovrascrive con le forze calcolate.
+ * @param nBodies Numero intero del numero di corpi considerato nel sistema.
+ * @param F Funzione che calcola la forza in N_DIM dimensioni di nBodies corpi.
+ * Richiede:
+ * un puntatore a un vettore di N_DIM * nBodies elementi double che contiene le N_DIM componenti delle posizioni di nBodies corpi.
+ * un puntatore a un vettore di N_DIM * nBodies elementi double in cui la funzione inserisce le N_DIM componenti delle forze applicate a nBodies corpi.
+ * un numero intero che contiene il numero di corpi considerato nel sistema.
  * @param f_o Puntatore a puntatore a un array di double che contiene le componenti della forza del passo precedente.
- * Per utilizzarlo correttamente bisogna inizializzare un puntatore a double a NULL e poi passarlo come riferimento
- * (oppure bisogna creare un nuovo puntatore che punta al primo e passare quello).
+ * Per utilizzarlo correttamente bisogna inizializzare un puntatore a double con NULL e poi passarlo come riferimento
+ * (oppure bisogna creare un nuovo puntatore che punta al primo e passare quello). Il resto viene gestito dalla funzione e il contenuto non va modificato fuori.
  * Ad esempio: double *f_o = NULL; velverlet_ndim(..., &f_o, ...);
- * @param F Funzione che calcola la forza in N_DIM dimensioni.
- * Richiede un puntatore a un vettore di N_DIM coordinate e restituisce un vettore di N_DIM componenti della forza.
  *
  * @note f_o dovrà essere liberato con la funzione free() dato che allocato nell'heap.
  * Se si ridefinisce N_DIM ad un valore maggiore di 0 la funzione funziona lo stesso (solo se anche F funziona lo stesso).
  */
-int velverlet_ndim(double dt, double *coord, double *vel, double *m, double *force, double nBodies, void (*F)(double *, double *, int), double **f_o)
+int velverlet_ndim_npart(double dt, double *coord, double *vel, double *m, double *force, int nBodies, void (*F)(double *, double *, int), double **f_o)
 {
     /*
     Codice di test:
@@ -38,7 +44,7 @@ int velverlet_ndim(double dt, double *coord, double *vel, double *m, double *for
 
     double *force = (double *)malloc(sizeof(double) * N_DIM * nBody);
 
-    velverlet_ndim(dt, verl_coords, verl_vels, m, force, nBody, f_3d_nBodies, &force_old_ptr);
+    velverlet_ndim_part(dt, verl_coords, verl_vels, m, force, nBody, f_3d_nBodies, &force_old_ptr);
     for (int i = 0; i < N_DIM * nBody; i++)
     {
         printf("%d %le %le\n", i, verl_coords[i], verl_vels[i]);
@@ -52,7 +58,7 @@ int velverlet_ndim(double dt, double *coord, double *vel, double *m, double *for
 
     printf("\n");
 
-    velverlet_ndim(dt, verl_coords, verl_vels, m, force, nBody, f_3d_nBodies, &force_old_ptr);
+    velverlet_ndim_npart(dt, verl_coords, verl_vels, m, force, nBody, f_3d_nBodies, &force_old_ptr);
     for (int i = 0; i < N_DIM * nBody; i++)
     {
         printf("%d %le %le\n", i, verl_coords[i], verl_vels[i]);
