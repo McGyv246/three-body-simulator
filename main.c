@@ -83,7 +83,7 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    double *force, **f_o = NULL;
+    double *force, *f_o = NULL;
     if (( force = (double *)malloc( system.N * SPATIAL_DIM * sizeof(double) )) == NULL) {
         fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
         return 1;
@@ -94,9 +94,7 @@ int main(int argc, char const *argv[])
     
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
     int totPrint = (int)(system.T/system.tdump);
-    velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.N, &grav_force, f_o);
 
-    /**
     for( int i=0; i<totPrint; i++ )
     {
         for( int i=0; i<system.N; i++ )
@@ -112,10 +110,9 @@ int main(int argc, char const *argv[])
 
         for( int j=0; j<system.tdump; j++ )
         {
-            velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.N, &grav_force, f_o);
+            velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.N, &grav_force, &f_o);
         }
     }
-    */
 
     fclose(outSystem);
     fclose(outEnergies);

@@ -115,6 +115,10 @@ int velverlet_ndim_npart(double dt, double forceConst, double *coord, double *ve
         }
 
         F(coord, m, forceConst, nBodies, *f_o);
+        for (int i=0; i<SPATIAL_DIM*nBodies; i++)
+        {
+            printf("%lf ", **f_o);
+        }
     }
 
     for( int i=0; i<nBodies; i++ )
