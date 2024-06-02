@@ -117,25 +117,30 @@ int velverlet_ndim_npart(double dt, double forceConst, double *coord, double *ve
         F(coord, m, forceConst, nBodies, *f_o);
     }
 
-    for (int i = 0; i < SPATIAL_DIM * nBodies; i++)
-    {
-        double currentM = *(m + (int)(i / nBodies));
-        // Parentesi aggiuntive messe per ordine intorno alle dereferenziazioni dei puntatori in una moltiplicazione
-        *(coord + i) = *(coord + i) + dt * (*(vel + i)) + 1. / (2. * currentM) * dt * dt * (*(*f_o + i));
-    }
+    for( int i=0; i<nBodies; i++ )
+        {
+            for( int j=0; j<SPATIAL_DIM; j++)
+            {
+                coord[j + i * SPATIAL_DIM] = coord[j + i * SPATIAL_DIM] + dt * vel[j + i * SPATIAL_DIM] + 1. / (2. * m[i]) * 
+                dt * dt * (*(*f_o + j + i * SPATIAL_DIM));           
+            }
+        }
 
     F(coord, m, forceConst, nBodies, force);
 
-    for (int i = 0; i < SPATIAL_DIM * nBodies; i++)
-    {
-        double currentM = *(m + (int)(i / nBodies));
-        *(vel + i) = *(vel + i) + 1. / (2. * currentM) * dt * (*(*f_o + i) + *(force + i));
+    for( int i=0; i<nBodies; i++ )
+        {
+            for( int j=0; j<SPATIAL_DIM; j++)
+            {
+                vel[j + i * SPATIAL_DIM] = vel[j + i * SPATIAL_DIM] + 1. / (2. * m[i]) * dt * (*(*f_o + j + i * SPATIAL_DIM) + 
+                force[j + i * SPATIAL_DIM]);
 
-        // Utilizzare malloc nella funzione che calcola la forza sarebbe stato dispendioso in termini di prestazioni.
-        // I valori vengono quindi copiati per componente dopo essere stati utilizzati nel conto.
-        // Questo risulta più efficiente assumendo che in numero di componenti è piccolo (cosa che ha senso assumere).
-        *(*f_o + i) = *(force + i);
-    }
+                // Utilizzare malloc nella funzione che calcola la forza sarebbe stato dispendioso in termini di prestazioni.
+                // I valori vengono quindi copiati per componente dopo essere stati utilizzati nel conto.
+                // Questo risulta più efficiente assumendo che in numero di componenti è piccolo (cosa che ha senso assumere).
+                *(*f_o + i) = force[j + i * SPATIAL_DIM];
+            }
+        }
 
     return 0;
 }
