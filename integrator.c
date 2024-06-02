@@ -6,32 +6,37 @@
 #define SPATIAL_DIM 3
 
 /**
- * Funzione che utilizza l'algoritmo Velocity Verlet ad SPATIAL_DIM (macro definita nel file integrator.c) dimensioni per calcolare posizioni
- * e velocità di un sistema nBodies particelle soggette a forza specificata.
+ * Funzione che utilizza l'algoritmo Velocity Verlet ad SPATIAL_DIM (macro definita nel file integrator.c) dimensioni per calcolare 
+ * posizioni e velocità di un sistema nBodies particelle soggette a forza specificata.
  *
  * @param dt Differenziale del tempo utilizzato per l'integrazione numerica
- * @param coord Puntatore ad un array di double contenente SPATIAL_DIM * nBodies elementi che corrispondono alle SPATIAL_DIM componenti delle posizioni di nBodies corpi.
+ * @param coord Puntatore ad un array di double contenente SPATIAL_DIM * nBodies elementi che corrispondono alle SPATIAL_DIM componenti
+ * delle posizioni di nBodies corpi.
  * La funzione lo aggiorna con le coordinate nuove.
- * @param vel Puntatore ad un array di double contenente SPATIAL_DIM * nBodies elementi che corrispondono alle SPATIAL_DIM componenti delle velocità di nBodies corpi.
- * La funzione lo aggiorna con le velocità nuove.
+ * @param vel Puntatore ad un array di double contenente SPATIAL_DIM * nBodies elementi che corrispondono alle SPATIAL_DIM componenti
+ * delle velocità di nBodies corpi. La funzione lo aggiorna con le velocità nuove.
  * @param m Puntatore ad un array di double di nBodies elementi contenente le masse dei corpi considerati.
- * @param force Puntatore ad un array di double di SPATIAL_DIM * nBodies elementi che corrispondono alle SPATIAL_DIM componenti delle forze applicate a nBodies corpi.
- * Deve essere passato da fuori e la funzione lo sovrascrive con le forze calcolate.
+ * @param force Puntatore ad un array di double di SPATIAL_DIM * nBodies elementi che corrispondono alle SPATIAL_DIM componenti delle
+ * forze applicate a nBodies corpi. Deve essere passato da fuori e la funzione lo sovrascrive con le forze calcolate.
  * @param nBodies Numero intero del numero di corpi considerato nel sistema.
  * @param F Funzione che calcola la forza in SPATIAL_DIM dimensioni di nBodies corpi.
  * Richiede:
- * un puntatore a un vettore di SPATIAL_DIM * nBodies elementi double che contiene le SPATIAL_DIM componenti delle posizioni di nBodies corpi.
- * un puntatore a un vettore di SPATIAL_DIM * nBodies elementi double in cui la funzione inserisce le SPATIAL_DIM componenti delle forze applicate a nBodies corpi.
- * un numero intero che contiene il numero di corpi considerato nel sistema.
+ * - un puntatore ad un vettore di SPATIAL_DIM * nBodies elementi double che contiene le SPATIAL_DIM componenti delle posizioni di 
+ * nBodies corpi.
+ * - un puntatore ad un vettore di nBodies elementi double che contiene le masse dei corpi in studio.
+ * - un numero double che contiene la costante di riferimento per il calcolo della forza.
+ * - un numero intero che contiene il numero di corpi considerato nel sistema.
+ * - un puntatore a un vettore di SPATIAL_DIM * nBodies elementi double in cui la funzione inserisce le SPATIAL_DIM componenti delle 
+ * forze applicate a nBodies corpi.
  * @param f_o Puntatore a puntatore a un array di double che contiene le componenti della forza del passo precedente.
  * Per utilizzarlo correttamente bisogna inizializzare un puntatore a double con NULL e poi passarlo come riferimento
- * (oppure bisogna creare un nuovo puntatore che punta al primo e passare quello). Il resto viene gestito dalla funzione e il contenuto non va modificato fuori.
- * Ad esempio: double *f_o = NULL; velverlet_ndim(..., &f_o, ...);
+ * (oppure bisogna creare un nuovo puntatore che punta al primo e passare quello). Il resto viene gestito dalla funzione e il contenuto
+ * non va modificato fuori. Ad esempio: double *f_o = NULL; velverlet_ndim(..., &f_o, ...);
  *
  * @note f_o dovrà essere liberato con la funzione free() dato che allocato nell'heap.
  * Se si ridefinisce SPATIAL_DIM ad un valore maggiore di 0 la funzione funziona lo stesso (solo se anche F funziona lo stesso).
  */
-int velverlet_ndim_npart(double dt, double G, double *coord, double *vel, double *m, double *force, int nBodies, void (*F)(double *, double *, double, int, double *), double **f_o)
+int velverlet_ndim_npart(double dt, double forceConst, double *coord, double *vel, double *m, double *force, int nBodies, void (*F)(double *, double *, double, int, double *), double **f_o)
 {
     /*
     Codice di test:
@@ -108,7 +113,7 @@ int velverlet_ndim_npart(double dt, double G, double *coord, double *vel, double
             return -1;
         }
 
-        F(coord, m, G, nBodies, *f_o);
+        F(coord, m, forceConst, nBodies, *f_o);
     }
 
     for (int i = 0; i < SPATIAL_DIM * nBodies; i++)
@@ -118,7 +123,7 @@ int velverlet_ndim_npart(double dt, double G, double *coord, double *vel, double
         *(coord + i) = *(coord + i) + dt * (*(vel + i)) + 1. / (2. * currentM) * dt * dt * (*(*f_o + i));
     }
 
-    F(coord, m, G, nBodies, force);
+    F(coord, m, forceConst, nBodies, force);
 
     for (int i = 0; i < SPATIAL_DIM * nBodies; i++)
     {

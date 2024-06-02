@@ -96,6 +96,14 @@ int main(int argc, char const *argv[])
     int totPrint = (int)(system.T/system.tdump);
     for( int i=0; i<totPrint; i++ )
     {
+        for( int i=0; i<system.N; i++ )
+        {
+            for( int j=0; j<SPATIAL_DIM; j++)
+            {
+                system.acc[ j + SPATIAL_DIM * i ] = force[ j + SPATIAL_DIM * i ]/system.masses[i];            
+            }
+        }
+        
         print_system(outSystem, &system, force);
         print_energies(outEnergies, &system);
 
@@ -230,14 +238,6 @@ void print_system(FILE *outFile, struct physicalSystem *system, double *force)
 {
     static double t=0.;
 
-    for( int i=0; i<system->N; i++ )
-    {
-        for( int j=0; j<SPATIAL_DIM; j++)
-        {
-            system->acc[ j + SPATIAL_DIM * i ] = force[ j + SPATIAL_DIM * i ]/system->masses[i];            
-        }
-    }
-
     fprintf(outFile, "%lf ", t);
 
     for( int i=0; i<system->N*SPATIAL_DIM; i++)
@@ -271,8 +271,8 @@ void print_energies(FILE *outFile, struct physicalSystem *system)
 {
     double kEnergy, potEnergy, totEnergy;
     
-    kEnergy = Ekin(system->vel, system->N);
-    potEnergy = Epot(system->coord, system->G, system->N);
+    kEnergy = Ekin(system->vel, system->masses, system->N);
+    potEnergy = Epot(system->coord, system->masses, system->G, system->N);
     totEnergy = kEnergy + potEnergy;
 
     fprintf(outFile, "%16.9lf %16.9lf %16.9lf\n", kEnergy, potEnergy, totEnergy);
@@ -290,20 +290,25 @@ void print_energies(FILE *outFile, struct physicalSystem *system)
  */
 void grav_force(double *coord, double *masses, double G, int N, double *force)
 {
-    double forceComp;
+    double forceComp, d;
+    double vec_d[SPATIAL_DIM];
+
     for( int i=0; i<SPATIAL_DIM*N; i++)
     {
         force[i] = 0;
     }
+
     for( int i=0; i<N; i++ )
     {
         for( int j=i+1; j<N; j++ )
         {
+            vec_dist((coord + i), (coord + j * SPATIAL_DIM), vec_d, SPATIAL_DIM);
+            d = dist((coord + i), (coord + j * SPATIAL_DIM), SPATIAL_DIM);
+
             for (int k=0; k<SPATIAL_DIM; k++)
             {   
                 
-                forceComp = -G * masses[i] * masses[j] * vec_dist((coord +i ), (coord + j * SPATIAL_DIM))
-                / pow(dist((coord + i), (coord + j * SPATIAL_DIM)),3);
+                forceComp = -G * masses[i] * masses[j] * vec_d[k] / pow(d,3);
                 *(force + k + i * SPATIAL_DIM) += forceComp;
                 *(force + k + j * SPATIAL_DIM) -= forceComp;
             }
