@@ -32,6 +32,7 @@ int read_input(FILE *inFile, struct physicalSystem *system);
 void print_system(FILE *outFile, struct physicalSystem *system, double *force);
 void print_energies(FILE *outFile, struct physicalSystem *system);
 void grav_force(double *coord, double *masses, double G, int N, double *force);
+void print_header(FILE *outFile, struct physicalSystem *system, char *titles);
 
 int main(int argc, char const *argv[]) 
 {
@@ -71,6 +72,10 @@ int main(int argc, char const *argv[])
     FILE *outEnergies;
     outSystem = fopen(OUTPUT_SYSTEM, "w");
     outEnergies = fopen(OUTPUT_ENERGIES, "w");
+
+    print_header(outSystem, &system, "#format: time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
+    print_header(outEnergies, &system, "#format:  kinetic energy,  potential energy,  total energy");
+
 
     if (outSystem == NULL || outEnergies == NULL)
     {
@@ -302,8 +307,8 @@ void grav_force(double *coord, double *masses, double G, int N, double *force)
     {
         for( int j=i+1; j<N; j++ )
         {
-            vec_dist((coord + j * SPATIAL_DIM), (coord + i), vec_d, SPATIAL_DIM);
-            d = dist((coord + j * SPATIAL_DIM), (coord + i), SPATIAL_DIM);
+            vec_dist((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), vec_d, SPATIAL_DIM);
+            d = dist((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), SPATIAL_DIM);
 
             for (int k=0; k<SPATIAL_DIM; k++)
             {   
@@ -314,4 +319,24 @@ void grav_force(double *coord, double *masses, double G, int N, double *force)
             }
         }
     }
+}
+
+/**
+ * Funzione che stampa l'header per i file di output
+ * 
+ * @param outFile Puntatore al file di output
+ * @param system Puntatore alla struct contenente le variabili relative al sistema
+ */
+void print_header(FILE *outFile, struct physicalSystem *system, char *titles)
+{
+    fprintf(outFile, "#In physics, you don't have to go around making trouble for yourself. Nature does it for you.  (Frank Wilczek)\n");
+    fprintf(outFile, "#HDR N\t%d\n", system->N);
+    fprintf(outFile, "#HDR G\t%lf\n", system->G);
+    fprintf(outFile, "#HDR m\t");
+    for(int i = 0; i < system->N; i++)
+    {
+        fprintf(outFile, "%lf ", system->masses[i]);
+    }
+    fprintf(outFile, "\n");
+    fprintf(outFile, "%s\n", titles);
 }
