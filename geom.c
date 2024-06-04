@@ -17,7 +17,6 @@
 #define N_OPS 3
 // a cosa serve questo? Non ho capito bene
 #define MAX_LEN 100
-#define SPATIAL_DIM 3
 
 double dist(const double *vec1, const double *vec2, const int dim);
 double scal(const double *vec1, const double *vec2, const int dim);

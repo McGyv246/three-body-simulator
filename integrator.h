@@ -1,1 +1,2 @@
-int velverlet_ndim_npart(double dt, double G, double *coord, double *vel, double *m, double *force, int nBodies, void (*F)(double *, double *, double, int, double *), double **f_o);
+int velverlet_ndim_npart(const double dt, const double forceConst, const int nBodies, const int spatial_dim, 
+const double *m, double *coord, double *vel, double *force, double **f_o, void (*F)(double *, double *, double, int, double *));
