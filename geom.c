@@ -100,6 +100,8 @@ double Ekin(const double *velVec, const double *masses, const int nBodies)
     int count = 0;
     double kinEnergyTot = 0;
     double v;
+    // sono molto in dubbio su questa parte: fare un ciclo in più ogni volta rende tutto troppo inefficiente; il gioco non 
+    // vale la candela
     for (int i = 0; i < nBodies + 1; i++)
     {
         if (masses[i] == masses[i + 1])
