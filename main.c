@@ -88,7 +88,7 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    double *force, **f_o = NULL;
+    double *force, *f_o = NULL;
     if ((force = (double *)malloc(system.N * SPATIAL_DIM * sizeof(double))) == NULL)
     {
         fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
@@ -115,7 +115,7 @@ int main(int argc, char const *argv[])
 
         for (int j = 0; j < system.tdump; j++)
         {
-            velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.N, &grav_force, f_o);
+            velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.N, grav_force, &f_o);
         }
     }
 

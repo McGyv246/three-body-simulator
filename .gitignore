@@ -13,3 +13,7 @@
 geom
 integrator
 main
+
+# Files di output
+traj.dat
+energies.dat
