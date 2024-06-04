@@ -263,7 +263,7 @@ void grav_force(double *coord, double *masses, double G, int nBodies, double *fo
     {
         for (int j = i + 1; j < nBodies; j++)
         {
-            vec_dist((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), vec_d, SPATIAL_DIM);
+            vec_diff((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), vec_d, SPATIAL_DIM);
             d = dist((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), SPATIAL_DIM);
 
             for (int k = 0; k < SPATIAL_DIM; k++)

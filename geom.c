@@ -1,6 +1,6 @@
 // gcc geom.c -std=c99 -o geom.exe -lm -Wall -Wpedantic
 
-/**prova di vec_dist
+/**prova di vec_diff
  * v1 = ( 0.000000 0.000000)
  * v2 = ( 1.000000 1.000000)
  * la norma del vettore distanza: 1.414214
