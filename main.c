@@ -30,7 +30,7 @@ struct physicalSystem
 };
 
 int read_input(FILE *inFile, struct physicalSystem *system);
-void grav_force(double *coord, double *masses, double G, int nBodies, double *force);
+void grav_force(const double *coord, const double *masses, const double G, const int nBodies, double *force);
 double Ekin(const double *velVec, const double *masses, const int nBodies);
 double Epot(const double *posVec, const double *masses, const double G, const int nBodies);
 void print_header(FILE *outFile, struct physicalSystem *system, char *titles);
@@ -249,7 +249,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
  * @param nBodies Numero di corpi che compongono il sistema considerato
  * @param force Puntatore al vettore di double in cui salvare le forze calcolate
  */
-void grav_force(double *coord, double *masses, double G, int nBodies, double *force)
+void grav_force(const double *coord, const double *masses, const double G, const int nBodies, double *force)
 {
     double forceComp, d;
     double vec_d[SPATIAL_DIM];
