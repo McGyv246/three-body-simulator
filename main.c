@@ -104,11 +104,11 @@ int main(int argc, char const *argv[])
     int totPrint = (int)(system.T / system.tdump);
     for (int i = 0; i < totPrint; i++)
     {
-        for (int i = 0; i < system.nBodies; i++)
+        for (int j = 0; j < system.nBodies; j++)
         {
-            for (int j = 0; j < SPATIAL_DIM; j++)
+            for (int k = 0; k < SPATIAL_DIM; k++)
             {
-                system.acc[j + SPATIAL_DIM * i] = force[j + SPATIAL_DIM * i] / system.masses[i];
+                system.acc[k + SPATIAL_DIM * j] = force[k + SPATIAL_DIM * j] / system.masses[k];
             }
         }
 
@@ -289,29 +289,13 @@ void grav_force(double *coord, double *masses, double G, int nBodies, double *fo
 
 double Ekin(const double *velVec, const double *masses, const int nBodies)
 {
-    int count = 0;
     double kinEnergyTot = 0;
-    double v;
-    // sono molto in dubbio su questa parte: fare un ciclo in più ogni volta rende tutto troppo inefficiente; il gioco non 
-    // vale la candela
-    for (int i = 0; i < nBodies + 1; i++)
+    
+    for (int i = 0; i < nBodies; i++)
     {
-        if (masses[i] == masses[i + 1])
-        {
-            count = count + 1;
-        }
+        kinEnergyTot += 0.5 * masses[i] * scal(velVec + SPATIAL_DIM * i, velVec + SPATIAL_DIM * i, SPATIAL_DIM);
     }
-    if (count == masses[0] * nBodies)
-    {
-        kinEnergyTot = 0.5 * scal(velVec, velVec, SPATIAL_DIM * nBodies);
-    }
-    else
-    {
-        for (int i = 0; i < nBodies; i++)
-        {
-            kinEnergyTot += 0.5 * masses[i] * scal(velVec + SPATIAL_DIM * i, velVec + SPATIAL_DIM * i, SPATIAL_DIM);
-        }
-    }
+    
     return kinEnergyTot;
 }
 
@@ -332,7 +316,7 @@ double Epot(const double *posVec, const double *masses, const double G, const in
     {
         for (int j = i + 1; j < nBodies; j++)
         {
-            double distance = dist((posVec + i * SPATIAL_DIM), (posVec + j * SPATIAL_DIM), SPATIAL_DIM);
+            double distance = dist((posVec + j * SPATIAL_DIM), (posVec + i * SPATIAL_DIM), SPATIAL_DIM);
             potEnergyTot += -G * masses[i] * masses[j] / distance;
         }
     }
