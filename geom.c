@@ -20,12 +20,11 @@
 #define SPATIAL_DIM 2
 
 
-double dist(const double *vec1, const double *vec2, const int dim);
-double scal(const double *vec1, const double *vec2, const int dim);
-double Ekin(const double *velVec, const double *mass, const int nBodies);
-double Epot(const double *posVec, const double *mass, const double G, const int nBodies);
-void vec_dist(const double *vec1, const double *vec2, double *vec_d, const int dim);
-
+double dist(double *vec1, double *vec2, int dim);
+double Ekin(double *vel, double *masses, int nBodies);
+double Epot(double *coord, double *masses, double G, int nBodies);
+void vec_dist(double *vec1, double *vec2, double *vec_d, int dim);
+double scal(double *vec1, double *vec2, int dim);
 
 
 /**
@@ -39,7 +38,7 @@ void vec_dist(const double *vec1, const double *vec2, double *vec_d, const int d
  *
  * @return puntatore a vettore double risultato delle distanze delle posizioni dei corpi
  */
-void vec_dist(const double *vec1, const double *vec2, double *vec_d, const int dim)
+void vec_dist(double *vec1, double *vec2, double *vec_d, int dim)
 {
         for(int i = 0; i < dim; i++)
         {
@@ -57,7 +56,7 @@ void vec_dist(const double *vec1, const double *vec2, double *vec_d, const int d
  *
  * @return Valore double della distanza euclidea tra i due vettori
  */
-double dist(const double *vec1, const double *vec2, const int dim)
+double dist(double *vec1, double *vec2, int dim)
 {
     double sumSquared = 0;
 
@@ -80,7 +79,7 @@ double dist(const double *vec1, const double *vec2, const int dim)
  *
  * @return Valore double risultato dal prodotto scalare
  */
-double scal(const double *vec1, const double *vec2, const int dim)
+double scal(double *vec1, double *vec2, int dim)
 {
     double sum = 0;
 
@@ -102,28 +101,28 @@ double scal(const double *vec1, const double *vec2, const int dim)
  * @return Valore double dell'energia cinetica
  */
 
-double Ekin(const double *velVec, const double *mass, const int nBodies)
+double Ekin(double *vel, double *masses, int nBodies)
 {
     int count = 0;
     double Ekin = 0;
     double v;
     for(int i = 0; i < nBodies + 1; i++)
     {
-        if(mass[i] == mass[i + 1])
+        if(masses[i] == masses[i + 1])
         {
             count = count + 1;
         }
     }
-    if(count == mass[0] * nBodies)
+    if(count == masses[0] * nBodies)
     {
-        Ekin = 0.5 * scal(velVec, velVec, SPATIAL_DIM * nBodies);
+        Ekin = 0.5 * scal(vel, vel, SPATIAL_DIM * nBodies);
     }
     else
     {
         for(int i = 0; i < nBodies; i++)
         {
-            v = velVec[i];
-            Ekin = Ekin + 0.5 * mass[i] * (v * v);
+            v = vel[i];
+            Ekin = Ekin + 0.5 * massses[i] * (v * v);
         }
     }
     return Ekin;
@@ -139,17 +138,17 @@ double Ekin(const double *velVec, const double *mass, const int nBodies)
  *
  * @return Valore double dell'energia potenziale
  */
-double Epot(const double *posVec, const double *mass, const double G, const int nBodies)
+double Epot(double *coords, double *masses, double G, int nBodies)
 {
     double potEnergyTot = 0;
     for (int i = 0; i < nBodies; i++)
     {
         for (int j = i + 1; j < nBodies; j++)
         {
-            double coords1[SPATIAL_DIM] = {posVec[3 * i], posVec[3 * i + 1], posVec[3 * i + 2]};
-            double coords2[SPATIAL_DIM] = {posVec[3 * j], posVec[3 * j + 1], posVec[3 * j + 2]};
+            double coords1[SPATIAL_DIM] = {coords[3 * i], coords[3 * i + 1], coords[3 * i + 2]};
+            double coords2[SPATIAL_DIM] = {coords[3 * j], coords[3 * j + 1], coords[3 * j + 2]};
             double distance = dist(coords1, coords2, 3);
-            potEnergyTot += -G*(mass[i] * mass[j])/ distance;
+            potEnergyTot += -G*(masses[i] * masses[j])/ distance;
         }
     }
 
