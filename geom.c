@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#define N_OPS 5
+#define N_OPS 3
 // a cosa serve questo? Non ho capito bene
 #define MAX_LEN 100
 #define SPATIAL_DIM 3
@@ -22,8 +22,6 @@
 double dist(const double *vec1, const double *vec2, const int dim);
 double scal(const double *vec1, const double *vec2, const int dim);
 void vec_diff(const double *vec1, const double *vec2, double *vec_d, const int dim);
-double Ekin(const double *velVec, const double *masses, const int nBodies);
-double Epot(const double *posVec, const double *masses, const double G, const int nBodies);
 
 /**
  * Funzione che riempie vec_d con il vettore differenza tra vec1 e vec2 
@@ -83,67 +81,4 @@ double scal(const double *vec1, const double *vec2, const int dim)
     }
 
     return sum;
-}
-
-/**
- * Funzione che calcola l'energia cinetica del sistema di un numero di corpi pari a nBodies
- *
- * @param velVec Puntatore al primo di double contenente le velocità dei corpi
- * @param masses Puntatore al vettore di double contenente le masse dei corpi
- * @param nBodies Numero intero del numero di corpi del sistema
- *
- * @return Valore double dell'energia cinetica
- */
-
-double Ekin(const double *velVec, const double *masses, const int nBodies)
-{
-    int count = 0;
-    double kinEnergyTot = 0;
-    double v;
-    // sono molto in dubbio su questa parte: fare un ciclo in più ogni volta rende tutto troppo inefficiente; il gioco non 
-    // vale la candela
-    for (int i = 0; i < nBodies + 1; i++)
-    {
-        if (masses[i] == masses[i + 1])
-        {
-            count = count + 1;
-        }
-    }
-    if (count == masses[0] * nBodies)
-    {
-        kinEnergyTot = 0.5 * scal(velVec, velVec, SPATIAL_DIM * nBodies);
-    }
-    else
-    {
-        for (int i = 0; i < nBodies; i++)
-        {
-            kinEnergyTot += 0.5 * masses[i] * scal(velVec + SPATIAL_DIM * i, velVec + SPATIAL_DIM * i, SPATIAL_DIM);
-        }
-    }
-    return kinEnergyTot;
-}
-
-/**
- * Funzione che calcola l'energia potenziale del sistema di un numero di corpi pari a nBodies
- *
- * @param posVec Puntatore al vettore di double contenente le posizioni dei corpi
- * @param masses Puntatore al vettore di double contenente le masse dei corpi
- * @param G costante di gravitazione universale
- * @param nBodies Numero intero del numero di corpi del sistema
- *
- * @return Valore double dell'energia potenziale
- */
-double Epot(const double *posVec, const double *masses, const double G, const int nBodies)
-{
-    double potEnergyTot = 0;
-    for (int i = 0; i < nBodies; i++)
-    {
-        for (int j = i + 1; j < nBodies; j++)
-        {
-            double distance = dist((posVec + i * SPATIAL_DIM), (posVec + j * SPATIAL_DIM), SPATIAL_DIM);
-            potEnergyTot += -G * masses[i] * masses[j] / distance;
-        }
-    }
-
-    return potEnergyTot;
 }

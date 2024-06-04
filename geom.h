@@ -1,4 +1,3 @@
-double dist(double *vec1, double *vec2, int dim);
-void vec_dist(double *vec1, double *vec2, double *vec_d, int dim);
-double Ekin(double *vel, double *masses, int nBodies);
-double Epot(double *coord, double *masses, double G, int nBodies);
+double dist(const double *vec1, const double *vec2, const int dim);
+double scal(const double *vec1, const double *vec2, const int dim);
+void vec_diff(const double *vec1, const double *vec2, double *vec_d, const int dim);
