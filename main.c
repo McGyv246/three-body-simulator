@@ -284,8 +284,8 @@ void grav_force(const double *coord, const double *masses, const double G, const
     {
         for (int j = i + 1; j < nBodies; j++)
         {
-            vec_diff((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), vec_d, SPATIAL_DIM);
-            d = dist((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), SPATIAL_DIM);
+            vec_diff((coord + i * SPATIAL_DIM), (coord + j * SPATIAL_DIM), vec_d, SPATIAL_DIM);
+            d = dist((coord + i * SPATIAL_DIM), (coord + j * SPATIAL_DIM), SPATIAL_DIM);
 
             for (int k = 0; k < SPATIAL_DIM; k++)
             {
@@ -380,17 +380,17 @@ void print_system(FILE *outFile, struct physicalSystem *system)
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
-        fprintf(outFile, "%lf ", system->coord[i]);
+        fprintf(outFile, "%.12lf ", system->coord[i]);
     }
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
-        fprintf(outFile, "%lf ", system->vel[i]);
+        fprintf(outFile, "%.12lf ", system->vel[i]);
     }
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
-        fprintf(outFile, "%lf ", system->acc[i]);
+        fprintf(outFile, "%.12lf ", system->acc[i]);
     }
 
     fprintf(outFile, "\n");
