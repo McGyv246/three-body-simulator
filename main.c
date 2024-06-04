@@ -1,4 +1,4 @@
-// gcc -std=c99 -lm -Wall -Wpedantic -O3 main.c integrator.c geom.c -o main.exe
+// gcc -std=c99 -Wall -Wpedantic -O3 main.c integrator.c geom.c -o main.exe -lm
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
