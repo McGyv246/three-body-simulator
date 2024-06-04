@@ -149,7 +149,7 @@ double Epot(const double *posVec, const double *mass, const double G, const int 
             double coords1[SPATIAL_DIM] = {posVec[3 * i], posVec[3 * i + 1], posVec[3 * i + 2]};
             double coords2[SPATIAL_DIM] = {posVec[3 * j], posVec[3 * j + 1], posVec[3 * j + 2]};
             double distance = dist(coords1, coords2, 3);
-            potEnergyTot += -G*(mass[i] * mass[i + 1])/ distance;
+            potEnergyTot += -G*(mass[i] * mass[j])/ distance;
         }
     }
 
