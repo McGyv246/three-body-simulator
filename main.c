@@ -14,9 +14,10 @@
 #define OUTPUT_SYSTEM "traj.dat"
 #define OUTPUT_ENERGIES "energies.dat"
 
-// creazione della struct physicalSystem, contenente le variabili di interesse del sistema e le posizioni e velocità dei corpi 
+// creazione della struct physicalSystem, contenente le variabili di interesse del sistema e le posizioni e velocità dei corpi
 // ad un dato istante
-struct physicalSystem{
+struct physicalSystem
+{
     int N;
     double G;
     double dt;
@@ -34,12 +35,12 @@ void print_energies(FILE *outFile, struct physicalSystem *system);
 void grav_force(double *coord, double *masses, double G, int N, double *force);
 void print_header(FILE *outFile, struct physicalSystem *system, char *titles);
 
-int main(int argc, char const *argv[]) 
+int main(int argc, char const *argv[])
 {
     FILE *inFile;
     int ans;
     struct physicalSystem system = {.N = -1, .G = -1, .dt = -1, .tdump = -1, .T = -1};
-    
+
     // errore in caso non sia stato letto alcun file in input
     if (argc < 2)
     {
@@ -56,18 +57,17 @@ int main(int argc, char const *argv[])
     }
 
     // ciclo per la lettura dei dati di input dal file fornito in esecuzione
-    while ( (ans = read_input(inFile, &system)) != -1 )
-    {   
-        if ( ans == -2 )
+    while ((ans = read_input(inFile, &system)) != -1)
+    {
+        if (ans == -2)
         {
             fprintf(stderr, "Errore nella lettura del file in input: il file deve contenere N, G, dt, tdump e T");
             return 1;
         }
     }
 
-    fclose(inFile);   
-    
-    
+    fclose(inFile);
+
     FILE *outSystem;
     FILE *outEnergies;
     outSystem = fopen(OUTPUT_SYSTEM, "w");
@@ -76,43 +76,44 @@ int main(int argc, char const *argv[])
     print_header(outSystem, &system, "#format: time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
     print_header(outEnergies, &system, "#format:  kinetic energy,  potential energy,  total energy");
 
-
     if (outSystem == NULL || outEnergies == NULL)
     {
         fprintf(stderr, "Errore nell'apertura dei file di output");
         return 1;
     }
 
-    if ((system.acc = (double *)malloc( system.N * SPATIAL_DIM * sizeof(double) )) == NULL) {
+    if ((system.acc = (double *)malloc(system.N * SPATIAL_DIM * sizeof(double))) == NULL)
+    {
         fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
         return 1;
     }
 
     double *force, **f_o = NULL;
-    if (( force = (double *)malloc( system.N * SPATIAL_DIM * sizeof(double) )) == NULL) {
+    if ((force = (double *)malloc(system.N * SPATIAL_DIM * sizeof(double))) == NULL)
+    {
         fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
         return 1;
     }
 
-    //calcolo la forza iniziale per ottenere l'accelerazione iniziale
+    // calcolo la forza iniziale per ottenere l'accelerazione iniziale
     grav_force(system.coord, system.masses, system.G, system.N, force);
-    
+
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
-    int totPrint = (int)(system.T/system.tdump);
-    for( int i=0; i<totPrint; i++ )
+    int totPrint = (int)(system.T / system.tdump);
+    for (int i = 0; i < totPrint; i++)
     {
-        for( int i=0; i<system.N; i++ )
+        for (int i = 0; i < system.N; i++)
         {
-            for( int j=0; j<SPATIAL_DIM; j++)
+            for (int j = 0; j < SPATIAL_DIM; j++)
             {
-                system.acc[ j + SPATIAL_DIM * i ] = force[ j + SPATIAL_DIM * i ]/system.masses[i];            
+                system.acc[j + SPATIAL_DIM * i] = force[j + SPATIAL_DIM * i] / system.masses[i];
             }
         }
-        
+
         print_system(outSystem, &system, force);
         print_energies(outEnergies, &system);
 
-        for( int j=0; j<system.tdump; j++ )
+        for (int j = 0; j < system.tdump; j++)
         {
             velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.N, &grav_force, f_o);
         }
@@ -132,10 +133,10 @@ int main(int argc, char const *argv[])
 
 /**
  * Funzione che legge i dati di input a partire dal file fornito in esecuzione (ogni volta che viene chiamata legge una riga)
- * 
+ *
  * @param inFile Puntatore al file fornito in esecuzione
  * @param system Puntatore alla struct contenente i dati relativi al sistema fisico considerato
- * 
+ *
  * @return -1 per End of File; -2 in caso di errore; 0 di default
  */
 int read_input(FILE *inFile, struct physicalSystem *system)
@@ -143,39 +144,39 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     char line[MAX_LEN], str[5];
     char var[6];
 
-    if ( fgets(line, MAX_LEN, inFile) == NULL )
+    if (fgets(line, MAX_LEN, inFile) == NULL)
     {
         return -1;
     }
 
-    // serie di controlli che cerca il N, G, dt, tdump e T nell'header e che esclude eventuali commenti 
+    // serie di controlli che cerca il N, G, dt, tdump e T nell'header e che esclude eventuali commenti
     if (line[0] == '#')
     {
         sscanf(line, "%4s", str);
         if (strcmp(str, "#HDR") == 0)
         {
             sscanf(line, "%*s %s", var);
-            if (strncmp(var,"N",1) == 0)
+            if (strncmp(var, "N", 1) == 0)
             {
                 sscanf(line, "%*s %*s %d", &system->N);
                 return 0;
             }
-            if (strncmp(var,"G",1) == 0)
+            if (strncmp(var, "G", 1) == 0)
             {
                 sscanf(line, "%*s %*s %lf", &system->G);
                 return 0;
             }
-            if (strncmp(var,"dt",2) == 0)
+            if (strncmp(var, "dt", 2) == 0)
             {
                 sscanf(line, "%*s %*s %lf", &system->dt);
                 return 0;
             }
-            if (strncmp(var,"tdump",5) == 0)
+            if (strncmp(var, "tdump", 5) == 0)
             {
                 sscanf(line, "%*s %*s %lf", &system->tdump);
                 return 0;
             }
-            if (strncmp(var,"T",1) == 0)
+            if (strncmp(var, "T", 1) == 0)
             {
                 sscanf(line, "%*s %*s %lf", &system->T);
                 return 0;
@@ -185,7 +186,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     }
 
     // controllo che siano stati letti i dati necessari per l'esecuzione del programma
-    if ( system->N == -1 || system->G == -1 || system->dt == -1 || system->tdump == -1 || system->T == -1 )
+    if (system->N == -1 || system->G == -1 || system->dt == -1 || system->tdump == -1 || system->T == -1)
     {
         return -2;
     }
@@ -195,71 +196,74 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     // codice che permette di puntare in modo "static" alla heap, in questo modo creiamo due
     // vettori di dimensione dinamica direttamente nella funzione (che vengono inizializzati solo una volta per esecuzione)
     static double *masses = NULL;
-    if(!masses) masses = (double *)malloc( system->N * sizeof(double) );
+    if (!masses)
+        masses = (double *)malloc(system->N * sizeof(double));
 
     static double *coord = NULL;
-    if(!coord) coord = (double *)malloc( system->N * SPATIAL_DIM * sizeof(double) );
+    if (!coord)
+        coord = (double *)malloc(system->N * SPATIAL_DIM * sizeof(double));
 
     static double *vel = NULL;
-    if(!vel) vel = (double *)malloc( system->N * SPATIAL_DIM * sizeof(double) );
+    if (!vel)
+        vel = (double *)malloc(system->N * SPATIAL_DIM * sizeof(double));
 
     // assegnazione dei puntatori appena inizializzati ai puntatori della struct
     system->masses = masses;
     system->coord = coord;
     system->vel = vel;
-    
+
     // lettura del numero di corpo di cui si stanno leggendo posizioni e velocità di partenza
     sscanf(line, "%d %n", &bodyNumber, &nTotChar);
 
     // lettura della massa del corpo specificato da bodyNumber
-    sscanf(line + nTotChar, "%lf %n", system->masses + (bodyNumber-1), &nChar);
+    sscanf(line + nTotChar, "%lf %n", system->masses + (bodyNumber - 1), &nChar);
     nTotChar += nChar;
-   
+
     // ciclo per la lettura della posizione di partenza del corpo specificato da bodyNumber
-    for (int i=0; i<SPATIAL_DIM; i++)
-    {   
-        sscanf(line + nTotChar, "%lf %n", system->coord + i + SPATIAL_DIM * (bodyNumber-1), &nChar);
+    for (int i = 0; i < SPATIAL_DIM; i++)
+    {
+        sscanf(line + nTotChar, "%lf %n", system->coord + i + SPATIAL_DIM * (bodyNumber - 1), &nChar);
         nTotChar += nChar;
     }
 
     // ciclo per la lettura della velocità di partenza del corpo specificato da bodyNumber
-    for (int i=0; i<SPATIAL_DIM; i++)
+    for (int i = 0; i < SPATIAL_DIM; i++)
     {
-        sscanf(line + nTotChar, "%lf %n", vel + i + SPATIAL_DIM * (bodyNumber-1), &nChar);
+        sscanf(line + nTotChar, "%lf %n", vel + i + SPATIAL_DIM * (bodyNumber - 1), &nChar);
         nTotChar += nChar;
     }
-    
+
     return 0;
 }
 
 /**
  * Funzione che date le condizioni del sistema in un dato istante, stampa le posizioni, le velocità e le accelerazioni
  * del dato istante nel file specificato in outFile
- * 
+ *
  * @param outFile Puntatore al file in cui stampare posizioni, velocità e accelerazioni del sistema
  * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema
  */
 void print_system(FILE *outFile, struct physicalSystem *system, double *force)
 {
-    static double t=0.;
+    static double t = 0.;
 
     fprintf(outFile, "%lf ", t);
 
-    for( int i=0; i<system->N*SPATIAL_DIM; i++)
+    for (int i = 0; i < system->N * SPATIAL_DIM; i++)
     {
         fprintf(outFile, "%lf ", system->coord[i]);
     }
 
-    for( int i=0; i<system->N*SPATIAL_DIM; i++)
+    for (int i = 0; i < system->N * SPATIAL_DIM; i++)
     {
         fprintf(outFile, "%lf ", system->vel[i]);
-    }    
+    }
 
-    for( int i=0; i<system->N*SPATIAL_DIM; i++)
+    for (int i = 0; i < system->N * SPATIAL_DIM; i++)
     {
         fprintf(outFile, "%lf ", system->acc[i]);
-    }        
-    
+    }
+
     fprintf(outFile, "\n");
 
     t++;
@@ -268,14 +272,14 @@ void print_system(FILE *outFile, struct physicalSystem *system, double *force)
 /**
  * Funzione che, date le condizioni del sistema in un dato istante, calcola energia cinetica, potenziale e totale nel dato istante.
  * Stampa poi tutto nel file specificato in outFile
- * 
+ *
  * @param outFile Puntatore al file in cui stampare energia cinetica, potenziale e totale del sistema in un dato istante
  * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema
  */
 void print_energies(FILE *outFile, struct physicalSystem *system)
 {
     double kEnergy, potEnergy, totEnergy;
-    
+
     kEnergy = Ekin(system->vel, system->masses, system->N);
     potEnergy = Epot(system->coord, system->masses, system->G, system->N);
     totEnergy = kEnergy + potEnergy;
@@ -286,8 +290,8 @@ void print_energies(FILE *outFile, struct physicalSystem *system)
 /**
  * Funzione che, date le posizioni di un numero di corpi specificato in un dato istante, calcola le accelerazioni gravitazionali
  * agenti tra questi nel dato istante
- * 
- * @param coord Puntatore al vettore di double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ..., 
+ *
+ * @param coord Puntatore al vettore di double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ...,
  * @param masses Puntatore al vettore di double contenente le masse dei corpi nel sistema
  * @param G Costante di gravitazione considerata per il calcolo della forza gravitazionale
  * @param N Numero di corpi che compongono il sistema considerato
@@ -298,22 +302,22 @@ void grav_force(double *coord, double *masses, double G, int N, double *force)
     double forceComp, d;
     double vec_d[SPATIAL_DIM];
 
-    for( int i=0; i<SPATIAL_DIM*N; i++)
+    for (int i = 0; i < SPATIAL_DIM * N; i++)
     {
         force[i] = 0;
     }
 
-    for( int i=0; i<N; i++ )
+    for (int i = 0; i < N; i++)
     {
-        for( int j=i+1; j<N; j++ )
+        for (int j = i + 1; j < N; j++)
         {
             vec_dist((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), vec_d, SPATIAL_DIM);
             d = dist((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), SPATIAL_DIM);
 
-            for (int k=0; k<SPATIAL_DIM; k++)
-            {   
-                
-                forceComp = -G * masses[i] * masses[j] * vec_d[k] / pow(d,3);
+            for (int k = 0; k < SPATIAL_DIM; k++)
+            {
+
+                forceComp = -G * masses[i] * masses[j] * vec_d[k] / pow(d, 3);
                 *(force + k + i * SPATIAL_DIM) += forceComp;
                 *(force + k + j * SPATIAL_DIM) -= forceComp;
             }
@@ -323,7 +327,7 @@ void grav_force(double *coord, double *masses, double G, int N, double *force)
 
 /**
  * Funzione che stampa l'header per i file di output
- * 
+ *
  * @param outFile Puntatore al file di output
  * @param system Puntatore alla struct contenente le variabili relative al sistema
  */
@@ -333,7 +337,7 @@ void print_header(FILE *outFile, struct physicalSystem *system, char *titles)
     fprintf(outFile, "#HDR N\t%d\n", system->N);
     fprintf(outFile, "#HDR G\t%lf\n", system->G);
     fprintf(outFile, "#HDR m\t");
-    for(int i = 0; i < system->N; i++)
+    for (int i = 0; i < system->N; i++)
     {
         fprintf(outFile, "%lf ", system->masses[i]);
     }
