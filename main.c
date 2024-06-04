@@ -18,7 +18,7 @@
 // ad un dato istante
 struct physicalSystem
 {
-    int N;
+    int nBodies;
     double G;
     double dt;
     double tdump;
@@ -32,14 +32,14 @@ struct physicalSystem
 int read_input(FILE *inFile, struct physicalSystem *system);
 void print_system(FILE *outFile, struct physicalSystem *system, double *force);
 void print_energies(FILE *outFile, struct physicalSystem *system);
-void grav_force(double *coord, double *masses, double G, int N, double *force);
+void grav_force(double *coord, double *masses, double G, int nBodies, double *force);
 void print_header(FILE *outFile, struct physicalSystem *system, char *titles);
 
 int main(int argc, char const *argv[])
 {
     FILE *inFile;
     int ans;
-    struct physicalSystem system = {.N = -1, .G = -1, .dt = -1, .tdump = -1, .T = -1};
+    struct physicalSystem system = {.nBodies = -1, .G = -1, .dt = -1, .tdump = -1, .T = -1};
 
     // errore in caso non sia stato letto alcun file in input
     if (argc < 2)
@@ -61,7 +61,7 @@ int main(int argc, char const *argv[])
     {
         if (ans == -2)
         {
-            fprintf(stderr, "Errore nella lettura del file in input: il file deve contenere N, G, dt, tdump e T");
+            fprintf(stderr, "Errore nella lettura del file in input: il file deve contenere nBodies, G, dt, tdump e T");
             return 1;
         }
     }
@@ -82,27 +82,27 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    if ((system.acc = (double *)malloc(system.N * SPATIAL_DIM * sizeof(double))) == NULL)
+    if ((system.acc = (double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(double))) == NULL)
     {
         fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
         return 1;
     }
 
     double *force, *f_o = NULL;
-    if ((force = (double *)malloc(system.N * SPATIAL_DIM * sizeof(double))) == NULL)
+    if ((force = (double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(double))) == NULL)
     {
         fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
         return 1;
     }
 
     // calcolo la forza iniziale per ottenere l'accelerazione iniziale
-    grav_force(system.coord, system.masses, system.G, system.N, force);
+    grav_force(system.coord, system.masses, system.G, system.nBodies, force);
 
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
     int totPrint = (int)(system.T / system.tdump);
     for (int i = 0; i < totPrint; i++)
     {
-        for (int i = 0; i < system.N; i++)
+        for (int i = 0; i < system.nBodies; i++)
         {
             for (int j = 0; j < SPATIAL_DIM; j++)
             {
@@ -115,7 +115,7 @@ int main(int argc, char const *argv[])
 
         for (int j = 0; j < system.tdump; j++)
         {
-            velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.N, grav_force, &f_o);
+            velverlet_ndim_npart(system.dt, system.G, system.coord, system.vel, system.masses, force, system.nBodies, grav_force, &f_o);
         }
     }
 
@@ -149,7 +149,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
         return -1;
     }
 
-    // serie di controlli che cerca il N, G, dt, tdump e T nell'header e che esclude eventuali commenti
+    // serie di controlli che cerca il nBodies, G, dt, tdump e T nell'header e che esclude eventuali commenti
     if (line[0] == '#')
     {
         sscanf(line, "%4s", str);
@@ -158,7 +158,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
             sscanf(line, "%*s %s", var);
             if (strncmp(var, "N", 1) == 0)
             {
-                sscanf(line, "%*s %*s %d", &system->N);
+                sscanf(line, "%*s %*s %d", &system->nBodies);
                 return 0;
             }
             if (strncmp(var, "G", 1) == 0)
@@ -186,7 +186,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     }
 
     // controllo che siano stati letti i dati necessari per l'esecuzione del programma
-    if (system->N == -1 || system->G == -1 || system->dt == -1 || system->tdump == -1 || system->T == -1)
+    if (system->nBodies == -1 || system->G == -1 || system->dt == -1 || system->tdump == -1 || system->T == -1)
     {
         return -2;
     }
@@ -197,15 +197,15 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     // vettori di dimensione dinamica direttamente nella funzione (che vengono inizializzati solo una volta per esecuzione)
     static double *masses = NULL;
     if (!masses)
-        masses = (double *)malloc(system->N * sizeof(double));
+        masses = (double *)malloc(system->nBodies * sizeof(double));
 
     static double *coord = NULL;
     if (!coord)
-        coord = (double *)malloc(system->N * SPATIAL_DIM * sizeof(double));
+        coord = (double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(double));
 
     static double *vel = NULL;
     if (!vel)
-        vel = (double *)malloc(system->N * SPATIAL_DIM * sizeof(double));
+        vel = (double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(double));
 
     // assegnazione dei puntatori appena inizializzati ai puntatori della struct
     system->masses = masses;
@@ -249,17 +249,17 @@ void print_system(FILE *outFile, struct physicalSystem *system, double *force)
 
     fprintf(outFile, "%lf ", t);
 
-    for (int i = 0; i < system->N * SPATIAL_DIM; i++)
+    for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
         fprintf(outFile, "%lf ", system->coord[i]);
     }
 
-    for (int i = 0; i < system->N * SPATIAL_DIM; i++)
+    for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
         fprintf(outFile, "%lf ", system->vel[i]);
     }
 
-    for (int i = 0; i < system->N * SPATIAL_DIM; i++)
+    for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
         fprintf(outFile, "%lf ", system->acc[i]);
     }
@@ -280,8 +280,8 @@ void print_energies(FILE *outFile, struct physicalSystem *system)
 {
     double kEnergy, potEnergy, totEnergy;
 
-    kEnergy = Ekin(system->vel, system->masses, system->N);
-    potEnergy = Epot(system->coord, system->masses, system->G, system->N);
+    kEnergy = Ekin(system->vel, system->masses, system->nBodies);
+    potEnergy = Epot(system->coord, system->masses, system->G, system->nBodies);
     totEnergy = kEnergy + potEnergy;
 
     fprintf(outFile, "%16.9lf %16.9lf %16.9lf\n", kEnergy, potEnergy, totEnergy);
@@ -294,22 +294,22 @@ void print_energies(FILE *outFile, struct physicalSystem *system)
  * @param coord Puntatore al vettore di double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ...,
  * @param masses Puntatore al vettore di double contenente le masse dei corpi nel sistema
  * @param G Costante di gravitazione considerata per il calcolo della forza gravitazionale
- * @param N Numero di corpi che compongono il sistema considerato
+ * @param nBodies Numero di corpi che compongono il sistema considerato
  * @param force Puntatore al vettore di double in cui salvare le forze calcolate
  */
-void grav_force(double *coord, double *masses, double G, int N, double *force)
+void grav_force(double *coord, double *masses, double G, int nBodies, double *force)
 {
     double forceComp, d;
     double vec_d[SPATIAL_DIM];
 
-    for (int i = 0; i < SPATIAL_DIM * N; i++)
+    for (int i = 0; i < SPATIAL_DIM * nBodies; i++)
     {
         force[i] = 0;
     }
 
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < nBodies; i++)
     {
-        for (int j = i + 1; j < N; j++)
+        for (int j = i + 1; j < nBodies; j++)
         {
             vec_dist((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), vec_d, SPATIAL_DIM);
             d = dist((coord + j * SPATIAL_DIM), (coord + i * SPATIAL_DIM), SPATIAL_DIM);
@@ -334,10 +334,10 @@ void grav_force(double *coord, double *masses, double G, int N, double *force)
 void print_header(FILE *outFile, struct physicalSystem *system, char *titles)
 {
     fprintf(outFile, "#In physics, you don't have to go around making trouble for yourself. Nature does it for you.  (Frank Wilczek)\n");
-    fprintf(outFile, "#HDR N\t%d\n", system->N);
+    fprintf(outFile, "#HDR N\t%d\n", system->nBodies);
     fprintf(outFile, "#HDR G\t%lf\n", system->G);
     fprintf(outFile, "#HDR m\t");
-    for (int i = 0; i < system->N; i++)
+    for (int i = 0; i < system->nBodies; i++)
     {
         fprintf(outFile, "%lf ", system->masses[i]);
     }
