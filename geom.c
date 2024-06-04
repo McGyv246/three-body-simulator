@@ -21,19 +21,19 @@
 
 double dist(const double *vec1, const double *vec2, const int dim);
 double scal(const double *vec1, const double *vec2, const int dim);
-void vec_dist(const double *vec1, const double *vec2, double *vec_d, const int dim);
+void vec_diff(const double *vec1, const double *vec2, double *vec_d, const int dim);
 double Ekin(const double *velVec, const double *masses, const int nBodies);
 double Epot(const double *posVec, const double *masses, const double G, const int nBodies);
 
 /**
- * Funzione che restituisce un vettore contenente le distanze delle posizioni tra il i-esimo corpo e il j-esimo (i,j = 1, 2, 3)
+ * Funzione che riempie vec_d con il vettore differenza tra vec1 e vec2 
  *
  * @param vec1 Puntatore al primo vettore di double
  * @param vec2 Puntatore al secondo vettore di double
  * @param vec_d Puntatore al vettore risultato di double
  * @param dim Numero intero della dimensione dei vettori
  */
-void vec_dist(const double *vec1, const double *vec2, double *vec_d, const int dim)
+void vec_diff(const double *vec1, const double *vec2, double *vec_d, const int dim)
 {
     for (int i = 0; i < dim; i++)
     {
@@ -86,11 +86,11 @@ double scal(const double *vec1, const double *vec2, const int dim)
 }
 
 /**
- * Funzione che calcola l'energia cinetica del sistema a 3 corpi
+ * Funzione che calcola l'energia cinetica del sistema di un numero di corpi pari a nBodies
  *
- * @param velVec Puntatore al primo vettore di doublle (velocità)
- * @param masses Puntatore al secondo vettore di double (masse)
- * @param nBodies Numero intero della dimensione dei vettori
+ * @param velVec Puntatore al primo di double contenente le velocità dei corpi
+ * @param masses Puntatore al vettore di double contenente le masse dei corpi
+ * @param nBodies Numero intero del numero di corpi del sistema
  *
  * @return Valore double dell'energia cinetica
  */
@@ -124,12 +124,12 @@ double Ekin(const double *velVec, const double *masses, const int nBodies)
 }
 
 /**
- * Funzione che calcola l'energia potenziale del sistema a 3 corpi
+ * Funzione che calcola l'energia potenziale del sistema di un numero di corpi pari a nBodies
  *
- * @param posVec Puntatore al primo vettore di doublle (posizioni)
- * @param masses Puntatore al secondo vettore di double (masse)
+ * @param posVec Puntatore al vettore di double contenente le posizioni dei corpi
+ * @param masses Puntatore al vettore di double contenente le masse dei corpi
  * @param G costante di gravitazione universale
- * @param nBodies Numero intero della dimensione dei vettori
+ * @param nBodies Numero intero del numero di corpi del sistema
  *
  * @return Valore double dell'energia potenziale
  */
