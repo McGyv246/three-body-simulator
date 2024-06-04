@@ -98,7 +98,7 @@ double scal(const double *vec1, const double *vec2, const int dim)
 double Ekin(const double *velVec, const double *masses, const int nBodies)
 {
     int count = 0;
-    double Ekin = 0;
+    double kinEnergyTot = 0;
     double v;
     for (int i = 0; i < nBodies + 1; i++)
     {
@@ -109,17 +109,16 @@ double Ekin(const double *velVec, const double *masses, const int nBodies)
     }
     if (count == masses[0] * nBodies)
     {
-        Ekin = 0.5 * scal(velVec, velVec, SPATIAL_DIM * nBodies);
+        kinEnergyTot = 0.5 * scal(velVec, velVec, SPATIAL_DIM * nBodies);
     }
     else
     {
         for (int i = 0; i < nBodies; i++)
         {
-            v = velVec[i];
-            Ekin = Ekin + 0.5 * masses[i] * (v * v);
+            kinEnergyTot += 0.5 * masses[i] * scal(velVec + SPATIAL_DIM * i, velVec + SPATIAL_DIM * i, SPATIAL_DIM);
         }
     }
-    return Ekin;
+    return kinEnergyTot;
 }
 
 /**
@@ -139,10 +138,8 @@ double Epot(const double *posVec, const double *masses, const double G, const in
     {
         for (int j = i + 1; j < nBodies; j++)
         {
-            double coords1[SPATIAL_DIM] = {posVec[3 * i], posVec[3 * i + 1], posVec[3 * i + 2]};
-            double coords2[SPATIAL_DIM] = {posVec[3 * j], posVec[3 * j + 1], posVec[3 * j + 2]};
-            double distance = dist(coords1, coords2, 3);
-            potEnergyTot += -G * (masses[i] * masses[i + 1]) / distance;
+            double distance = dist((posVec + i * SPATIAL_DIM), (posVec + j * SPATIAL_DIM), SPATIAL_DIM);
+            potEnergyTot += -G * masses[i] * masses[j] / distance;
         }
     }
 
