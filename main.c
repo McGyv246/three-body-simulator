@@ -149,7 +149,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
         return -1;
     }
 
-    // serie di controlli che cerca il nBodies, G, dt, tdump e T nell'header e che esclude eventuali commenti
+    // serie di controlli che cerca nBodies, G, dt, tdump e T nell'header e che esclude eventuali commenti
     if (line[0] == '#')
     {
         sscanf(line, "%4s", str);
