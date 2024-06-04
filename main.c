@@ -33,8 +33,8 @@ int read_input(FILE *inFile, struct physicalSystem *system);
 void grav_force(const double *coord, const double *masses, const double G, const int nBodies, double *force);
 double Ekin(const double *velVec, const double *masses, const int nBodies);
 double Epot(const double *posVec, const double *masses, const double G, const int nBodies);
-void print_header(FILE *outFile, struct physicalSystem *system, char *titles);
-void print_system(FILE *outFile, struct physicalSystem *system, double *force);
+void print_header(FILE *outFile, struct physicalSystem *system, char *format);
+void print_system(FILE *outFile, struct physicalSystem *system);
 void print_energies(FILE *outFile, struct physicalSystem *system);
 
 int main(int argc, char const *argv[])
@@ -46,15 +46,15 @@ int main(int argc, char const *argv[])
     // errore in caso non sia stato letto alcun file in input
     if (argc < 2)
     {
-        fprintf(stderr, "Non è stato specificato un file di input.\n");
+        fprintf(stderr, "\nNon è stato specificato un file di input.\n\n");
         return 1;
     }
 
     inFile = fopen(argv[1], "r");
     // errore in caso ci siano stati problemi nell'apertura del file
-    if (inFile == NULL)
+    if (!inFile)
     {
-        fprintf(stderr, "Impossibile aprire il file: %s\n", argv[1]);
+        fprintf(stderr, "\nImpossibile aprire il file: %s\n\n", argv[1]);
         return 1;
     }
 
@@ -63,7 +63,7 @@ int main(int argc, char const *argv[])
     {
         if (ans == -2)
         {
-            fprintf(stderr, "Errore nella lettura del file in input: il file deve contenere nBodies, G, dt, tdump e T");
+            fprintf(stderr, "\nErrore nella lettura del file in input: il file deve contenere nBodies, G, dt, tdump e T\n\n");
             return 1;
         }
     }
@@ -75,25 +75,25 @@ int main(int argc, char const *argv[])
     outSystem = fopen(OUTPUT_SYSTEM, "w");
     outEnergies = fopen(OUTPUT_ENERGIES, "w");
 
-    print_header(outSystem, &system, "#format: time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
-    print_header(outEnergies, &system, "#format:  kinetic energy,  potential energy,  total energy");
+    print_header(outSystem, &system, "time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
+    print_header(outEnergies, &system, "kinetic energy,  potential energy,  total energy");
 
-    if (outSystem == NULL || outEnergies == NULL)
+    if (!outSystem || !outEnergies)
     {
-        fprintf(stderr, "Errore nell'apertura dei file di output");
+        fprintf(stderr, "\nErrore nell'apertura dei file di output\n\n");
         return 1;
     }
 
     if ((system.acc = (double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(double))) == NULL)
     {
-        fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
+        fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
         return 1;
     }
 
     double *force, *f_o = NULL;
     if ((force = (double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(double))) == NULL)
     {
-        fprintf(stderr, "Errore nell'allocazione dinamica della memoria");
+        fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
         return 1;
     }
 
@@ -112,7 +112,7 @@ int main(int argc, char const *argv[])
             }
         }
 
-        print_system(outSystem, &system, force);
+        print_system(outSystem, &system);
         print_energies(outEnergies, &system);
 
         for (int j = 0; j < system.tdump; j++)
@@ -200,15 +200,36 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     // vettori di dimensione dinamica direttamente nella funzione (che vengono inizializzati solo una volta per esecuzione)
     static double *masses = NULL;
     if (!masses)
+    {
         masses = (double *)malloc(system->nBodies * sizeof(double));
-
+        if (!masses)
+        {
+            fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
+            return -2;
+        }
+    }
+    
     static double *coord = NULL;
     if (!coord)
+    {
         coord = (double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(double));
+        if (!coord)
+        {
+            fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
+            return -2;
+        }
+    }
 
     static double *vel = NULL;
     if (!vel)
+    {
         vel = (double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(double));
+        if (!vel)
+        {
+            fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
+            return -2;
+        }
+    } 
 
     // assegnazione dei puntatori appena inizializzati ai puntatori della struct
     system->masses = masses;
@@ -330,7 +351,7 @@ double Epot(const double *posVec, const double *masses, const double G, const in
  * @param outFile Puntatore al file di output
  * @param system Puntatore alla struct contenente le variabili relative al sistema
  */
-void print_header(FILE *outFile, struct physicalSystem *system, char *titles)
+void print_header(FILE *outFile, struct physicalSystem *system, char *format)
 {
     fprintf(outFile, "#In physics, you don't have to go around making trouble for yourself. Nature does it for you.  (Frank Wilczek)\n");
     fprintf(outFile, "#HDR N\t%d\n", system->nBodies);
@@ -341,7 +362,7 @@ void print_header(FILE *outFile, struct physicalSystem *system, char *titles)
         fprintf(outFile, "%lf ", system->masses[i]);
     }
     fprintf(outFile, "\n");
-    fprintf(outFile, "%s\n", titles);
+    fprintf(outFile, "#format:\t%s\n", format);
 }
 
 /**
@@ -351,7 +372,7 @@ void print_header(FILE *outFile, struct physicalSystem *system, char *titles)
  * @param outFile Puntatore al file in cui stampare posizioni, velocità e accelerazioni del sistema
  * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema
  */
-void print_system(FILE *outFile, struct physicalSystem *system, double *force)
+void print_system(FILE *outFile, struct physicalSystem *system)
 {
     static double t = 0.;
 

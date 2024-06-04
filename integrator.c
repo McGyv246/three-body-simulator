@@ -109,7 +109,7 @@ double *coord, double *vel, double *force, double **f_o, void (*F)(const double 
         *f_o = (double *)malloc(sizeof(double) * spatialDim * nBodies);
         if (*f_o == NULL)
         {
-            fprintf(stderr, "Si è verificato un errore nell'allocazione di memoria.");
+            fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
             return -1;
         }
 
