@@ -390,17 +390,26 @@ void print_system(FILE *outFile, struct physicalSystem *system)
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
-        fprintf(outFile, "%.16Lf ", system->coord[i]);
+#ifdef NO_Z
+        if (i % 3 != 2)
+#endif
+            fprintf(outFile, "%.16Lf ", system->coord[i]);
     }
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
-        fprintf(outFile, "%.16Lf ", system->vel[i]);
+#ifdef NO_Z
+        if (i % 3 != 2)
+#endif
+            fprintf(outFile, "%.16Lf ", system->vel[i]);
     }
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
-        fprintf(outFile, "%.16Lf ", system->acc[i]);
+#ifdef NO_Z
+        if (i % 3 != 2)
+#endif
+            fprintf(outFile, "%.16Lf ", system->acc[i]);
     }
 
     fprintf(outFile, "\n");
