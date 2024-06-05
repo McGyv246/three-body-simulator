@@ -19,20 +19,20 @@
 struct physicalSystem
 {
     int nBodies;
-    double G;
-    double dt;
-    double tdump;
-    double T;
-    double *masses;
-    double *coord;
-    double *vel;
-    double *acc;
+    long double G;
+    long double dt;
+    long double tdump;
+    long double T;
+    long double *masses;
+    long double *coord;
+    long double *vel;
+    long double *acc;
 };
 
 int read_input(FILE *inFile, struct physicalSystem *system);
-void grav_force(const double *coord, const double *masses, const double G, const int nBodies, double *force);
-double Ekin(const double *velVec, const double *masses, const int nBodies);
-double Epot(const double *posVec, const double *masses, const double G, const int nBodies);
+void grav_force(const long double *coord, const long double *masses, const long double G, const int nBodies, long double *force);
+long double Ekin(const long double *velVec, const long double *masses, const int nBodies);
+long double Epot(const long double *posVec, const long double *masses, const long double G, const int nBodies);
 void print_header(FILE *outFile, struct physicalSystem *system, char *format);
 void print_system(FILE *outFile, struct physicalSystem *system);
 void print_energies(FILE *outFile, struct physicalSystem *system);
@@ -84,14 +84,14 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    if ((system.acc = (double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(double))) == NULL)
+    if ((system.acc = (long double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(long double))) == NULL)
     {
         fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
         return 1;
     }
 
-    double *force, *f_o = NULL;
-    if ((force = (double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(double))) == NULL)
+    long double *force, *f_o = NULL;
+    if ((force = (long double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(long double))) == NULL)
     {
         fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
         return 1;
@@ -166,22 +166,22 @@ int read_input(FILE *inFile, struct physicalSystem *system)
             }
             if (strncmp(var, "G", 1) == 0)
             {
-                sscanf(line, "%*s %*s %lf", &system->G);
+                sscanf(line, "%*s %*s %Lf", &system->G);
                 return 0;
             }
             if (strncmp(var, "dt", 2) == 0)
             {
-                sscanf(line, "%*s %*s %lf", &system->dt);
+                sscanf(line, "%*s %*s %Lf", &system->dt);
                 return 0;
             }
             if (strncmp(var, "tdump", 5) == 0)
             {
-                sscanf(line, "%*s %*s %lf", &system->tdump);
+                sscanf(line, "%*s %*s %Lf", &system->tdump);
                 return 0;
             }
             if (strncmp(var, "T", 1) == 0)
             {
-                sscanf(line, "%*s %*s %lf", &system->T);
+                sscanf(line, "%*s %*s %Lf", &system->T);
                 return 0;
             }
         }
@@ -198,10 +198,10 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 
     // codice che permette di puntare in modo "static" alla heap, in questo modo creiamo due
     // vettori di dimensione dinamica direttamente nella funzione (che vengono inizializzati solo una volta per esecuzione)
-    static double *masses = NULL;
+    static long double *masses = NULL;
     if (!masses)
     {
-        masses = (double *)malloc(system->nBodies * sizeof(double));
+        masses = (long double *)malloc(system->nBodies * sizeof(long double));
         if (!masses)
         {
             fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
@@ -209,10 +209,10 @@ int read_input(FILE *inFile, struct physicalSystem *system)
         }
     }
 
-    static double *coord = NULL;
+    static long double *coord = NULL;
     if (!coord)
     {
-        coord = (double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(double));
+        coord = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
         if (!coord)
         {
             fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
@@ -220,10 +220,10 @@ int read_input(FILE *inFile, struct physicalSystem *system)
         }
     }
 
-    static double *vel = NULL;
+    static long double *vel = NULL;
     if (!vel)
     {
-        vel = (double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(double));
+        vel = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
         if (!vel)
         {
             fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
@@ -240,20 +240,20 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     sscanf(line, "%d %n", &bodyNumber, &nTotChar);
 
     // lettura della massa del corpo specificato da bodyNumber
-    sscanf(line + nTotChar, "%lf %n", system->masses + (bodyNumber - 1), &nChar);
+    sscanf(line + nTotChar, "%Lf %n", system->masses + (bodyNumber - 1), &nChar);
     nTotChar += nChar;
 
     // ciclo per la lettura della posizione di partenza del corpo specificato da bodyNumber
     for (int i = 0; i < SPATIAL_DIM; i++)
     {
-        sscanf(line + nTotChar, "%lf %n", system->coord + i + SPATIAL_DIM * (bodyNumber - 1), &nChar);
+        sscanf(line + nTotChar, "%Lf %n", system->coord + i + SPATIAL_DIM * (bodyNumber - 1), &nChar);
         nTotChar += nChar;
     }
 
     // ciclo per la lettura della velocità di partenza del corpo specificato da bodyNumber
     for (int i = 0; i < SPATIAL_DIM; i++)
     {
-        sscanf(line + nTotChar, "%lf %n", vel + i + SPATIAL_DIM * (bodyNumber - 1), &nChar);
+        sscanf(line + nTotChar, "%Lf %n", vel + i + SPATIAL_DIM * (bodyNumber - 1), &nChar);
         nTotChar += nChar;
     }
 
@@ -264,16 +264,16 @@ int read_input(FILE *inFile, struct physicalSystem *system)
  * Funzione che, date le posizioni di un numero di corpi specificato in un dato istante, calcola le accelerazioni gravitazionali
  * agenti tra questi nel dato istante
  *
- * @param coord Puntatore al vettore di double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ...,
- * @param masses Puntatore al vettore di double contenente le masse dei corpi nel sistema
+ * @param coord Puntatore al vettore di long double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ...,
+ * @param masses Puntatore al vettore di long double contenente le masse dei corpi nel sistema
  * @param G Costante di gravitazione considerata per il calcolo della forza gravitazionale
  * @param nBodies Numero di corpi che compongono il sistema considerato
- * @param force Puntatore al vettore di double in cui salvare le forze calcolate
+ * @param force Puntatore al vettore di long double in cui salvare le forze calcolate
  */
-void grav_force(const double *coord, const double *masses, const double G, const int nBodies, double *force)
+void grav_force(const long double *coord, const long double *masses, const long double G, const int nBodies, long double *force)
 {
-    double forceComp, d;
-    double vec_d[SPATIAL_DIM];
+    long double forceComp, d;
+    long double vec_d[SPATIAL_DIM];
 
     for (int i = 0; i < SPATIAL_DIM * nBodies; i++)
     {
@@ -301,16 +301,16 @@ void grav_force(const double *coord, const double *masses, const double G, const
 /**
  * Funzione che calcola l'energia cinetica del sistema di un numero di corpi pari a nBodies
  *
- * @param velVec Puntatore al primo di double contenente le velocità dei corpi
- * @param masses Puntatore al vettore di double contenente le masse dei corpi
+ * @param velVec Puntatore al primo di long double contenente le velocità dei corpi
+ * @param masses Puntatore al vettore di long double contenente le masse dei corpi
  * @param nBodies Numero intero del numero di corpi del sistema
  *
- * @return Valore double dell'energia cinetica
+ * @return Valore long double dell'energia cinetica
  */
 
-double Ekin(const double *velVec, const double *masses, const int nBodies)
+long double Ekin(const long double *velVec, const long double *masses, const int nBodies)
 {
-    double kinEnergyTot = 0;
+    long double kinEnergyTot = 0;
 
     for (int i = 0; i < nBodies; i++)
     {
@@ -323,21 +323,21 @@ double Ekin(const double *velVec, const double *masses, const int nBodies)
 /**
  * Funzione che calcola l'energia potenziale del sistema di un numero di corpi pari a nBodies
  *
- * @param posVec Puntatore al vettore di double contenente le posizioni dei corpi
- * @param masses Puntatore al vettore di double contenente le masse dei corpi
+ * @param posVec Puntatore al vettore di long double contenente le posizioni dei corpi
+ * @param masses Puntatore al vettore di long double contenente le masse dei corpi
  * @param G costante di gravitazione universale
  * @param nBodies Numero intero del numero di corpi del sistema
  *
- * @return Valore double dell'energia potenziale
+ * @return Valore long double dell'energia potenziale
  */
-double Epot(const double *posVec, const double *masses, const double G, const int nBodies)
+long double Epot(const long double *posVec, const long double *masses, const long double G, const int nBodies)
 {
-    double potEnergyTot = 0;
+    long double potEnergyTot = 0;
     for (int i = 0; i < nBodies; i++)
     {
         for (int j = i + 1; j < nBodies; j++)
         {
-            double distance = dist((posVec + j * SPATIAL_DIM), (posVec + i * SPATIAL_DIM), SPATIAL_DIM);
+            long double distance = dist((posVec + j * SPATIAL_DIM), (posVec + i * SPATIAL_DIM), SPATIAL_DIM);
             potEnergyTot += -G * masses[i] * masses[j] / distance;
         }
     }
@@ -353,13 +353,13 @@ double Epot(const double *posVec, const double *masses, const double G, const in
  */
 void print_header(FILE *outFile, struct physicalSystem *system, char *format)
 {
-    fprintf(outFile, "#In physics, you don't have to go around making trouble for yourself. Nature does it for you.  (Frank Wilczek)\n");
+    fprintf(outFile, "#In physics, you don't have to go around making trouble for yourseLf. Nature does it for you.  (Frank Wilczek)\n");
     fprintf(outFile, "#HDR N\t%d\n", system->nBodies);
-    fprintf(outFile, "#HDR G\t%lf\n", system->G);
+    fprintf(outFile, "#HDR G\t%Lf\n", system->G);
     fprintf(outFile, "#HDR m\t");
     for (int i = 0; i < system->nBodies; i++)
     {
-        fprintf(outFile, "%lf ", system->masses[i]);
+        fprintf(outFile, "%Lf ", system->masses[i]);
     }
     fprintf(outFile, "\n");
     fprintf(outFile, "#format:\t%s\n", format);
@@ -374,23 +374,23 @@ void print_header(FILE *outFile, struct physicalSystem *system, char *format)
  */
 void print_system(FILE *outFile, struct physicalSystem *system)
 {
-    static double t = 0.;
+    static long double t = 0.;
 
-    fprintf(outFile, "%lf ", t);
+    fprintf(outFile, "%Lf ", t);
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
-        fprintf(outFile, "%.12lf ", system->coord[i]);
+        fprintf(outFile, "%.16Lf ", system->coord[i]);
     }
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
-        fprintf(outFile, "%.12lf ", system->vel[i]);
+        fprintf(outFile, "%.16Lf ", system->vel[i]);
     }
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
-        fprintf(outFile, "%.12lf ", system->acc[i]);
+        fprintf(outFile, "%.16Lf ", system->acc[i]);
     }
 
     fprintf(outFile, "\n");
@@ -407,11 +407,11 @@ void print_system(FILE *outFile, struct physicalSystem *system)
  */
 void print_energies(FILE *outFile, struct physicalSystem *system)
 {
-    double kEnergy, potEnergy, totEnergy;
+    long double kEnergy, potEnergy, totEnergy;
 
     kEnergy = Ekin(system->vel, system->masses, system->nBodies);
     potEnergy = Epot(system->coord, system->masses, system->G, system->nBodies);
     totEnergy = kEnergy + potEnergy;
 
-    fprintf(outFile, "%16.9lf %16.9lf %16.9lf\n", kEnergy, potEnergy, totEnergy);
+    fprintf(outFile, "%16.9Lf %16.9Lf %16.9Lf\n", kEnergy, potEnergy, totEnergy);
 }

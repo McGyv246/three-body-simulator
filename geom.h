@@ -1,3 +1,3 @@
-void vec_diff(const double *vec1, const double *vec2, double *vec_d, const int dim);
-double dist(const double *vec1, const double *vec2, const int dim);
-double scal(const double *vec1, const double *vec2, const int dim);
+void vec_diff(const long double *vec1, const long double *vec2, long double *vec_d, const int dim);
+long double dist(const long double *vec1, const long double *vec2, const int dim);
+long double scal(const long double *vec1, const long double *vec2, const int dim);

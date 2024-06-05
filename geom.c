@@ -14,19 +14,19 @@
 #include <math.h>
 #define N_OPS 3
 
-void vec_diff(const double *vec1, const double *vec2, double *vec_d, const int dim);
-double dist(const double *vec1, const double *vec2, const int dim);
-double scal(const double *vec1, const double *vec2, const int dim);
+void vec_diff(const long double *vec1, const long double *vec2, long double *vec_d, const int dim);
+long double dist(const long double *vec1, const long double *vec2, const int dim);
+long double scal(const long double *vec1, const long double *vec2, const int dim);
 
 /**
  * Funzione che riempie vec_d con il vettore differenza tra vec1 e vec2
  *
- * @param vec1 Puntatore al primo vettore di double
- * @param vec2 Puntatore al secondo vettore di double
- * @param vec_d Puntatore al vettore risultato di double
+ * @param vec1 Puntatore al primo vettore di long double
+ * @param vec2 Puntatore al secondo vettore di long double
+ * @param vec_d Puntatore al vettore risultato di long double
  * @param dim Numero intero della dimensione dei vettori
  */
-void vec_diff(const double *vec1, const double *vec2, double *vec_d, const int dim)
+void vec_diff(const long double *vec1, const long double *vec2, long double *vec_d, const int dim)
 {
     for (int i = 0; i < dim; i++)
     {
@@ -37,15 +37,15 @@ void vec_diff(const double *vec1, const double *vec2, double *vec_d, const int d
 /**
  * Funzione che calcola la distanza tra 2 vettori di dimensione specificata
  *
- * @param vec1 Puntatore al primo vettore di double
- * @param vec2 Puntatore al secondo vettore di double
+ * @param vec1 Puntatore al primo vettore di long double
+ * @param vec2 Puntatore al secondo vettore di long double
  * @param dim Numero intero della dimensione dei vettori
  *
- * @return Valore double della distanza euclidea tra i due vettori
+ * @return Valore long double della distanza euclidea tra i due vettori
  */
-double dist(const double *vec1, const double *vec2, const int dim)
+long double dist(const long double *vec1, const long double *vec2, const int dim)
 {
-    double sumSquared = 0;
+    long double sumSquared = 0;
 
     // NOTA: qui sarebbe stato più elegante calcolare un array con le differenze quadratiche e
     // poi usare la funzione scal. Abbiamo optato per questa versione più efficiente.
@@ -60,15 +60,15 @@ double dist(const double *vec1, const double *vec2, const int dim)
 /**
  * Funzione che calcola il prodotto scalare tra 2 vettori di dimensione specificata
  *
- * @param vec1 Puntatore al primo vettore di double
- * @param vec2 Puntatore al secondo vettore di double
+ * @param vec1 Puntatore al primo vettore di long double
+ * @param vec2 Puntatore al secondo vettore di long double
  * @param dim Numero intero della dimensione dei vettori
  *
- * @return Valore double risultato dal prodotto scalare
+ * @return Valore long double risultato dal prodotto scalare
  */
-double scal(const double *vec1, const double *vec2, const int dim)
+long double scal(const long double *vec1, const long double *vec2, const int dim)
 {
-    double sum = 0;
+    long double sum = 0;
 
     for (int i = 0; i < dim; i++)
     {
