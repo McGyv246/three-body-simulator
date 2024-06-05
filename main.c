@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
 {
     FILE *inFile;
     int ans;
-    struct physicalSystem system = {.nBodies = -1, .G = -1, .dt = -1, .tdump = -1, .T = -1};
+    struct physicalSystem system = {.nBodies = -1.L, .G = -1.L, .dt = -1.L, .tdump = -1.L, .T = -1.L};
 
     // errore in caso non sia stato letto alcun file in input
     if (argc < 2)
@@ -277,7 +277,7 @@ void grav_force(const long double *coord, const long double *masses, const long 
 
     for (int i = 0; i < SPATIAL_DIM * nBodies; i++)
     {
-        force[i] = 0;
+        force[i] = 0.L;
     }
 
     for (int i = 0; i < nBodies; i++)
@@ -310,11 +310,11 @@ void grav_force(const long double *coord, const long double *masses, const long 
 
 long double Ekin(const long double *velVec, const long double *masses, const int nBodies)
 {
-    long double kinEnergyTot = 0;
+    long double kinEnergyTot = 0.L;
 
     for (int i = 0; i < nBodies; i++)
     {
-        kinEnergyTot += 0.5 * masses[i] * scal(velVec + SPATIAL_DIM * i, velVec + SPATIAL_DIM * i, SPATIAL_DIM);
+        kinEnergyTot += 0.5L * masses[i] * scal(velVec + SPATIAL_DIM * i, velVec + SPATIAL_DIM * i, SPATIAL_DIM);
     }
 
     return kinEnergyTot;
@@ -332,7 +332,7 @@ long double Ekin(const long double *velVec, const long double *masses, const int
  */
 long double Epot(const long double *posVec, const long double *masses, const long double G, const int nBodies)
 {
-    long double potEnergyTot = 0;
+    long double potEnergyTot = 0.L;
     for (int i = 0; i < nBodies; i++)
     {
         for (int j = i + 1; j < nBodies; j++)
@@ -374,9 +374,9 @@ void print_header(FILE *outFile, struct physicalSystem *system, char *format)
  */
 void print_system(FILE *outFile, struct physicalSystem *system)
 {
-    static long double t = 0.;
+    static unsigned int t = 0;
 
-    fprintf(outFile, "%Lf ", t);
+    fprintf(outFile, "%u ", t);
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {

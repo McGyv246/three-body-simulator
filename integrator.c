@@ -118,7 +118,7 @@ int velverlet_ndim_npart(const long double dt, const long double forceConst, con
     {
         for (int i = 0; i < spatialDim; i++)
         {
-            coord[i + j * spatialDim] = coord[i + j * spatialDim] + dt * vel[i + j * spatialDim] + 1. / (2. * masses[j]) * dt * dt * *(*f_o + i + j * spatialDim);
+            coord[i + j * spatialDim] = coord[i + j * spatialDim] + dt * vel[i + j * spatialDim] + 1.L / (2.L * masses[j]) * dt * dt * *(*f_o + i + j * spatialDim);
         }
     }
 
@@ -128,7 +128,7 @@ int velverlet_ndim_npart(const long double dt, const long double forceConst, con
     {
         for (int i = 0; i < spatialDim; i++)
         {
-            vel[i + j * spatialDim] = vel[i + j * spatialDim] + 1. / (2. * masses[j]) * dt * (*(*f_o + i + j * spatialDim) + force[i + j * spatialDim]);
+            vel[i + j * spatialDim] = vel[i + j * spatialDim] + 1.L / (2.L * masses[j]) * dt * (*(*f_o + i + j * spatialDim) + force[i + j * spatialDim]);
 
             // Utilizzare malloc nella funzione che calcola la forza sarebbe stato dispendioso in termini di prestazioni.
             // I valori vengono quindi copiati per componente dopo essere stati utilizzati nel conto.

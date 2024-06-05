@@ -45,7 +45,7 @@ void vec_diff(const long double *vec1, const long double *vec2, long double *vec
  */
 long double dist(const long double *vec1, const long double *vec2, const int dim)
 {
-    long double sumSquared = 0;
+    long double sumSquared = 0.L;
 
     // NOTA: qui sarebbe stato più elegante calcolare un array con le differenze quadratiche e
     // poi usare la funzione scal. Abbiamo optato per questa versione più efficiente.
@@ -68,7 +68,7 @@ long double dist(const long double *vec1, const long double *vec2, const int dim
  */
 long double scal(const long double *vec1, const long double *vec2, const int dim)
 {
-    long double sum = 0;
+    long double sum = 0.L;
 
     for (int i = 0; i < dim; i++)
     {
