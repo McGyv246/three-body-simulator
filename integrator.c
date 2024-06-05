@@ -99,6 +99,28 @@ int velverlet_ndim_npart(const long double dt, const long double forceConst, con
     8 9.999980e-01 -1.999999e-03
     */
 
+    /*
+    NOTE:
+    Abbiamo scritto questa funzione in modo che funzioni in spatialDim dimensioni per nBodies corpi contemporaneamente.
+    Strutturarla così (rendendola un po' più specifica del velocity verlet generico,
+    ma comunque generale per sistemi ad nBodies particelle) ha permesso di operare ottimizzazioni nel calcolo della forza.
+    Nello specifico ha permesso di evitare il calcolo della forza tra gli stessi due corpi sia dal punto di vista del primo
+    che del secondo, ma di riutilizzare (opportunamente cambiato di segno) il calcolo fatto in uno dei due casi anche per l'altro caso.
+
+    Un'altra importante ottimizzazione (sia nella leggibilità del codice che nella performance) è nel calcolo delle posizioni.
+    Aggiornando le posizioni un corpo alla volta avrebbe causato problemi nel calcolo della forza applicata ai corpi successivi,
+    il primo sarebbe stato nell'istante t + dt, gli altri nell'istante t, questo avrebbe prodotto risultati sbagliati.
+    Invece di tenere una copia del vettore posizioni, e fare giri poco chiari all'interno del main per evitare questo problema,
+    (che peraltro è comune a ogni tipo di sistema di particelle) abbiamo deciso di fare il calcolo per tutti i corpi contemporaneamente,
+    calcolando la forza per tutti i corpi una volta sola all'inizio e aggiornando tutte le posizioni di conseguenza.
+
+    Inoltre abbiamo scritto tutti i parametri necessari e non abbiamo passato la struct physical system perché avrebbe aumentato di
+    molto il coupling tra questa funzione e il file main.
+    Riconosciamo che la firma della funzione sarebbe stata deciamente più leggibile utilizzando la struct ma dal punto di vista
+    logico non era giustificato. Inoltre in questo modo è molto più chiaro quali parametri vengono modificati dalla funzione e quali
+    sono soltanto un input costante.
+    */
+
     // Questo permette di non sapere come va inizializzata la variabile da fuori,
     // basta inizializzare un puntatore a long double come NULL e poi passare
     // un puntatore a quel puntatore.

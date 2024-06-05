@@ -1,4 +1,14 @@
 // gcc -std=c99 -Wall -Wpedantic -O3 main.c integrator.c geom.c -o main.exe -lm
+/*
+NOTE: le funzioni grav_force, Ekin ed Epot non prendono la struct physicalSystem come parametro perché
+abbiamo ritenuto che le rendesse più generali e riutilizzabili in altri contesti, oltre a rendere molto più chiaro che
+cosa viene utilizzato per i calcoli della funzione (cosa che sarebbe nascosta se si utilizzasse la struct).
+
+In particolare la funzione grav_force va passata in input alla funzione velverlet_ndim_npart e quindi deve rispettare l'interfaccia
+lì definita per il puntatore a funzione (si legga il commento all'interno di velverlet_ndim_npart per chiarimenti sul perché
+non prende come parametro la struct physicalSystem).
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
