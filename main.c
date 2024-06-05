@@ -117,8 +117,8 @@ int main(int argc, char const *argv[])
 
         for (int j = 0; j < system.tdump; j++)
         {
-            velverlet_ndim_npart(system.dt, system.G, system.nBodies, SPATIAL_DIM, system.masses, system.coord, system.vel, force, 
-            &f_o, &grav_force);
+            velverlet_ndim_npart(system.dt, system.G, system.nBodies, SPATIAL_DIM, system.masses, system.coord, system.vel, force,
+                                 &f_o, &grav_force);
         }
     }
 
@@ -208,7 +208,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
             return -2;
         }
     }
-    
+
     static double *coord = NULL;
     if (!coord)
     {
@@ -229,7 +229,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
             fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
             return -2;
         }
-    } 
+    }
 
     // assegnazione dei puntatori appena inizializzati ai puntatori della struct
     system->masses = masses;
@@ -311,12 +311,12 @@ void grav_force(const double *coord, const double *masses, const double G, const
 double Ekin(const double *velVec, const double *masses, const int nBodies)
 {
     double kinEnergyTot = 0;
-    
+
     for (int i = 0; i < nBodies; i++)
     {
         kinEnergyTot += 0.5 * masses[i] * scal(velVec + SPATIAL_DIM * i, velVec + SPATIAL_DIM * i, SPATIAL_DIM);
     }
-    
+
     return kinEnergyTot;
 }
 

@@ -1,10 +1,8 @@
-// gcc integrator.c -o integrator.exe -Wall -Wpedantic -O3 -lm
-
 #include <stdio.h>
 #include <stdlib.h>
 
 /**
- * Funzione che utilizza l'algoritmo Velocity Verlet a spatialDim dimensioni (numero specificato in argomento alla funzione) per 
+ * Funzione che utilizza l'algoritmo Velocity Verlet a spatialDim dimensioni (numero specificato in argomento alla funzione) per
  * calcolare posizioni e velocità di un sistema nBodies particelle soggette a forza specificata.
  *
  * @param dt Differenziale del tempo utilizzato per l'integrazione numerica.
@@ -36,7 +34,7 @@
  * @note f_o dovrà essere liberato con la funzione free() dato che allocato nell'heap.
  */
 int velverlet_ndim_npart(const double dt, const double forceConst, const int nBodies, const int spatialDim, const double *masses,
-double *coord, double *vel, double *force, double **f_o, void (*F)(const double *, const double *, const double, const int, double *))
+                         double *coord, double *vel, double *force, double **f_o, void (*F)(const double *, const double *, const double, const int, double *))
 {
     /*
     Codice di test:
