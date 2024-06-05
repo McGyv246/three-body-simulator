@@ -140,6 +140,7 @@ int main(int argc, char const *argv[])
     free(system.vel);
     free(system.acc);
     free(force);
+    free(f_o);
 
     return 0;
 }
