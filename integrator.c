@@ -116,25 +116,30 @@ double *coord, double *vel, double *force, double **f_o, void (*F)(const double 
         F(coord, masses, forceConst, nBodies, *f_o);
     }
 
-    for (int i = 0; i < spatialDim * nBodies; i++)
-    {
-        double currentM = *(masses + (int)(i / nBodies));
-        // Parentesi aggiuntive messe per ordine intorno alle dereferenziazioni dei puntatori in una moltiplicazione
-        *(coord + i) = *(coord + i) + dt * (*(vel + i)) + 1. / (2. * currentM) * dt * dt * (*(*f_o + i));
-    }
+    for (int j = 0; j < nBodies; j++)
+        {
+            for (int i = 0;i < spatialDim; i++)
+            {
+                coord[i + j * spatialDim] = coord[i + j * spatialDim] + dt * vel[i + j * spatialDim] + 1. / (2. * masses[j]) * dt
+                * dt * *(*f_o + i + j * spatialDim);
+            }
+        }
 
     F(coord, masses, forceConst, nBodies, force);
 
-    for (int i = 0; i < spatialDim * nBodies; i++)
-    {
-        double currentM = *(masses + (int)(i / nBodies));
-        *(vel + i) = *(vel + i) + 1. / (2. * currentM) * dt * (*(*f_o + i) + *(force + i));
+    for (int j = 0; j < nBodies; j++)
+        {
+            for (int i = 0;i < spatialDim; i++)
+            {
+                vel[i + j * spatialDim] = vel[i + j * spatialDim] + 1. / (2. * masses[j]) * dt * (*(*f_o + i + j * spatialDim)
+                + force[i + j * spatialDim]);
 
-        // Utilizzare malloc nella funzione che calcola la forza sarebbe stato dispendioso in termini di prestazioni.
-        // I valori vengono quindi copiati per componente dopo essere stati utilizzati nel conto.
-        // Questo risulta più efficiente assumendo che in numero di componenti è piccolo (cosa che ha senso assumere).
-        *(*f_o + i) = *(force + i);
-    }
+                // Utilizzare malloc nella funzione che calcola la forza sarebbe stato dispendioso in termini di prestazioni.
+                // I valori vengono quindi copiati per componente dopo essere stati utilizzati nel conto.
+                // Questo risulta più efficiente assumendo che in numero di componenti è piccolo (cosa che ha senso assumere).
+                *(*f_o + i + j * spatialDim) = force[i + j * spatialDim];
+            }
+        }
 
     return 0;
 }
