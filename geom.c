@@ -1,5 +1,3 @@
-// gcc geom.c -std=c99 -o geom.exe -lm -Wall -Wpedantic
-
 /**prova di vec_diff
  * v1 = ( 0.000000 0.000000)
  * v2 = ( 1.000000 1.000000)
@@ -15,15 +13,13 @@
 #include <stdio.h>
 #include <math.h>
 #define N_OPS 3
-// a cosa serve questo? Non ho capito bene
-#define MAX_LEN 100
 
 void vec_diff(const double *vec1, const double *vec2, double *vec_d, const int dim);
 double dist(const double *vec1, const double *vec2, const int dim);
 double scal(const double *vec1, const double *vec2, const int dim);
 
 /**
- * Funzione che riempie vec_d con il vettore differenza tra vec1 e vec2 
+ * Funzione che riempie vec_d con il vettore differenza tra vec1 e vec2
  *
  * @param vec1 Puntatore al primo vettore di double
  * @param vec2 Puntatore al secondo vettore di double
