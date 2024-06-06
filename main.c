@@ -389,7 +389,7 @@ void print_header(FILE *outFile, struct physicalSystem *system, char *format)
  */
 void print_system(FILE *outFile, struct physicalSystem *system)
 {
-    static unsigned int t = 0;
+    static double t = 0.;
 
     fprintf(outFile, "%u ", t);
 
