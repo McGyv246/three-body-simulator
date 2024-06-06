@@ -410,7 +410,7 @@ void print_system(FILE *outFile, struct physicalSystem *system)
 {
     static double t = 0.;
 
-    fprintf(outFile, "%u ", t);
+    fprintf(outFile, "%lf ", t);
 
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
