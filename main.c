@@ -127,8 +127,12 @@ int main(int argc, char const *argv[])
 
         for (int j = 0; j < system.tdump; j++)
         {
-            velverlet_ndim_npart(system.dt, system.G, system.nBodies, SPATIAL_DIM, system.masses, system.coord, system.vel, force,
-                                 &f_o, &grav_force);
+            int resultCode = velverlet_ndim_npart(system.dt, system.G, system.nBodies, SPATIAL_DIM, system.masses, system.coord, system.vel,
+                                                  force, &f_o, &grav_force);
+            if (resultCode == -1)
+            {
+                return 1;
+            }
         }
     }
 

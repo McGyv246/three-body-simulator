@@ -31,6 +31,8 @@
  * - un puntatore a un vettore di spatialDim * nBodies elementi long double in cui la funzione inserisce le spatialDim componenti delle
  * forze applicate a nBodies corpi.
  *
+ * @return -1 in caso di errore, 0 di default.
+ *
  * @note f_o dovrà essere liberato con la funzione free() dato che allocato nell'heap.
  */
 int velverlet_ndim_npart(const long double dt, const long double forceConst, const int nBodies, const int spatialDim, const long double *masses,
