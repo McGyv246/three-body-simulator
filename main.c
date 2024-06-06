@@ -19,8 +19,9 @@ printf("%lu  %lu\n", sizeof(double), sizeof(long double));
 In base a quanto trovato su internet l'unico modo per aggirare questa limitazione sarebbero delle librerie
 che fanno simulazioni lato software, però molto più lente rispetto al supporto nativo da parte dell'hardware.
 
-La differenza purtroppo è notevole, dato che, ad esempio utilizzando input_2.dat con long double su windows si ottiene che
-la prima energia totale stampata è -2.085220066, mentre l'ultima è -2.085220066 (uguale)
+La differenza purtroppo è notevole, dato che, ad esempio utilizzando input_2.dat con long double su x86 si ottiene che
+la prima energia totale stampata è -2.085220066, mentre l'ultima (la numero 100005) è -2.085220066 (uguale),
+invece su Arm64 la prima è sempre -2.085220066, mentre l'ultima è -2.085220034 (le ultime 2 cifre significative sono cambiate).
 */
 
 #include <stdio.h>
