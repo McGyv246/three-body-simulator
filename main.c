@@ -7,6 +7,9 @@ cosa viene utilizzato per i calcoli della funzione (cosa che sarebbe nascosta se
 In particolare la funzione grav_force va passata in input alla funzione velverlet_ndim_npart e quindi deve rispettare l'interfaccia
 lì definita per il puntatore a funzione (si legga il commento all'interno di velverlet_ndim_npart per chiarimenti sul perché
 non prende come parametro la struct physicalSystem).
+
+Abbiamo deciso di utilizzare long double al posto di double per attenuare la fluttuazione sulle ultime cifre decimali stampate 
+dell'energia totale.
 */
 
 #include <stdio.h>
@@ -23,6 +26,7 @@ non prende come parametro la struct physicalSystem).
 // per rendere più facile l'uso del programma poniamo i nomi dei file di output come macro
 #define OUTPUT_SYSTEM "traj.dat"
 #define OUTPUT_ENERGIES "energies.dat"
+#define FUNNY
 
 #ifdef FUNNY
 #include <time.h>
@@ -36,8 +40,8 @@ struct physicalSystem
     int nBodies;
     long double G;
     long double dt;
-    long double tdump;
-    long double T;
+    int tdump;
+    int T;
     long double *masses;
     long double *coord;
     long double *vel;
@@ -56,7 +60,10 @@ int main(int argc, char const *argv[])
 {
     FILE *inFile;
     int ans;
-    struct physicalSystem system = {.nBodies = -1.L, .G = -1.L, .dt = -1.L, .tdump = -1.L, .T = -1.L};
+
+    struct physicalSystem system = {.nBodies = -1, .G = -1.L, .dt = -1.L, .tdump = -1, .T = -1, .masses = NULL, .coord = NULL, 
+    .vel = NULL};
+
 
 #ifdef FUNNY
     srand(time(NULL));
@@ -70,6 +77,7 @@ int main(int argc, char const *argv[])
     }
 
     inFile = fopen(argv[1], "r");
+
     // errore in caso ci siano stati problemi nell'apertura del file
     if (!inFile)
     {
@@ -200,12 +208,12 @@ int read_input(FILE *inFile, struct physicalSystem *system)
             }
             if (strncmp(var, "tdump", 5) == 0)
             {
-                sscanf(line, "%*s %*s %Lf", &system->tdump);
+                sscanf(line, "%*s %*s %d", &system->tdump);
                 return 0;
             }
             if (strncmp(var, "T", 1) == 0)
             {
-                sscanf(line, "%*s %*s %Lf", &system->T);
+                sscanf(line, "%*s %*s %d", &system->T);
                 return 0;
             }
         }
@@ -213,7 +221,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     }
 
     // controllo che siano stati letti i dati necessari per l'esecuzione del programma
-    if (system->nBodies == -1 || system->G == -1 || system->dt == -1 || system->tdump == -1 || system->T == -1)
+    if (system->nBodies < 0 || system->G < 0 || system->dt < 0 || system->tdump < 0 || system->T < 0)
     {
         return -2;
     }
@@ -222,43 +230,35 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 
     // codice che permette di puntare in modo "static" alla heap, in questo modo creiamo due
     // vettori di dimensione dinamica direttamente nella funzione (che vengono inizializzati solo una volta per esecuzione)
-    static long double *masses = NULL;
-    if (!masses)
+    if (!system->masses)
     {
-        masses = (long double *)malloc(system->nBodies * sizeof(long double));
-        if (!masses)
+        system->masses = (long double *)malloc(system->nBodies * sizeof(long double));
+        if (!system->masses)
         {
             fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
             return -2;
         }
     }
 
-    static long double *coord = NULL;
-    if (!coord)
+    if (!system->coord)
     {
-        coord = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
-        if (!coord)
+        system->coord = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
+        if (!system->coord)
         {
             fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
             return -2;
         }
     }
 
-    static long double *vel = NULL;
-    if (!vel)
+    if (!system->vel)
     {
-        vel = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
-        if (!vel)
+        system->vel = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
+        if (!system->vel)
         {
             fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
             return -2;
         }
     }
-
-    // assegnazione dei puntatori appena inizializzati ai puntatori della struct
-    system->masses = masses;
-    system->coord = coord;
-    system->vel = vel;
 
     // lettura del numero di corpo di cui si stanno leggendo posizioni e velocità di partenza
     sscanf(line, "%d %n", &bodyNumber, &nTotChar);
@@ -277,7 +277,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     // ciclo per la lettura della velocità di partenza del corpo specificato da bodyNumber
     for (int i = 0; i < SPATIAL_DIM; i++)
     {
-        sscanf(line + nTotChar, "%Lf %n", vel + i + SPATIAL_DIM * (bodyNumber - 1), &nChar);
+        sscanf(line + nTotChar, "%Lf %n", system->vel + i + SPATIAL_DIM * (bodyNumber - 1), &nChar);
         nTotChar += nChar;
     }
 

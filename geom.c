@@ -12,7 +12,6 @@
 
 #include <stdio.h>
 #include <math.h>
-#define N_OPS 3
 
 void vec_diff(const long double *vec1, const long double *vec2, long double *vec_d, const int dim);
 long double dist(const long double *vec1, const long double *vec2, const int dim);
