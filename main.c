@@ -76,7 +76,17 @@ int main(int argc, char const *argv[])
     FILE *inFile;
     int ans;
 
-    struct physicalSystem system = {.nBodies = -1, .G = -1.L, .dt = -1.L, .tdump = -1, .T = -1, .masses = NULL, .coord = NULL, .vel = NULL};
+    // system = {.nBodies = -1, .G = -1.L, .dt = -1.L, .tdump = -1, .T = -1, .masses = NULL, .coord = NULL, .vel = NULL};
+
+    struct physicalSystem *system = (struct physicalSystem *)malloc(sizeof(struct physicalSystem));
+    system->nBodies = -1;
+    system->G = -1.L;
+    system->dt = -1.L;
+    system->tdump = -1;
+    system->T = -1;
+    system->masses = NULL;
+    system->coord = NULL;
+    system->vel = NULL;
 
 #ifdef FUNNY
     srand(time(NULL));
@@ -99,7 +109,7 @@ int main(int argc, char const *argv[])
     }
 
     // ciclo per la lettura dei dati di input dal file fornito in esecuzione
-    while ((ans = read_input(inFile, &system)) != -1)
+    while ((ans = read_input(inFile, system)) != -1)
     {
         if (ans == -2)
         {
@@ -121,41 +131,41 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    system.acc = (long double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(long double));
+    system->acc = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
     long double *force, *f_o = NULL;
-    force = (long double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(long double));
+    force = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
 
-    if (system.acc == NULL || force == NULL)
+    if (system->acc == NULL || force == NULL)
     {
         fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
         return 1;
     }
 
     // calcolo la forza iniziale per ottenere l'accelerazione iniziale
-    grav_force(system.coord, system.masses, system.G, system.nBodies, force);
+    grav_force(system->coord, system->masses, system->G, system->nBodies, force);
 
     // stampa dell'header nei due file di output
-    print_header(outSystem, &system, "time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
-    print_header(outEnergies, &system, "kinetic energy,  potential energy,  total energy");
+    print_header(outSystem, system, "time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
+    print_header(outEnergies, system, "kinetic energy,  potential energy,  total energy");
 
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
-    int totPrint = (int)(system.T / system.tdump);
+    int totPrint = (int)(system->T / system->tdump);
     for (int i = 0; i < totPrint; i++)
     {
-        for (int j = 0; j < system.nBodies; j++)
+        for (int j = 0; j < system->nBodies; j++)
         {
             for (int k = 0; k < SPATIAL_DIM; k++)
             {
-                system.acc[k + SPATIAL_DIM * j] = force[k + SPATIAL_DIM * j] / system.masses[k];
+                system->acc[k + SPATIAL_DIM * j] = force[k + SPATIAL_DIM * j] / system->masses[k];
             }
         }
 
-        print_system(outSystem, &system);
-        print_energies(outEnergies, &system);
+        print_system(outSystem, system);
+        print_energies(outEnergies, system);
 
-        for (int j = 0; j < system.tdump; j++)
+        for (int j = 0; j < system->tdump; j++)
         {
-            int resultCode = velverlet_ndim_npart(system.dt, system.G, system.nBodies, SPATIAL_DIM, system.masses, system.coord, system.vel,
+            int resultCode = velverlet_ndim_npart(system->dt, system->G, system->nBodies, SPATIAL_DIM, system->masses, system->coord, system->vel,
                                                   force, &f_o, &grav_force);
             if (resultCode == -1)
             {
@@ -167,10 +177,11 @@ int main(int argc, char const *argv[])
     fclose(outSystem);
     fclose(outEnergies);
 
-    free(system.masses);
-    free(system.coord);
-    free(system.vel);
-    free(system.acc);
+    free(system->masses);
+    free(system->coord);
+    free(system->vel);
+    free(system->acc);
+    free(system);
     free(force);
     free(f_o);
 
