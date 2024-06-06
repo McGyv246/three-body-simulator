@@ -119,31 +119,31 @@ int main(int argc, char const *argv[])
     // calcolo la forza iniziale per ottenere l'accelerazione iniziale
     grav_force(system.coord, system.masses, system.G, system.nBodies, force);
 
-    // // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
-    // int totPrint = (int)(system.T / system.tdump);
-    // for (int i = 0; i < totPrint; i++)
-    // {
-    //     for (int j = 0; j < system.nBodies; j++)
-    //     {
-    //         for (int k = 0; k < SPATIAL_DIM; k++)
-    //         {
-    //             system.acc[k + SPATIAL_DIM * j] = force[k + SPATIAL_DIM * j] / system.masses[k];
-    //         }
-    //     }
+    // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
+    int totPrint = (int)(system.T / system.tdump);
+    for (int i = 0; i < totPrint; i++)
+    {
+        for (int j = 0; j < system.nBodies; j++)
+        {
+            for (int k = 0; k < SPATIAL_DIM; k++)
+            {
+                system.acc[k + SPATIAL_DIM * j] = force[k + SPATIAL_DIM * j] / system.masses[k];
+            }
+        }
 
-    //     print_system(outSystem, &system);
-    //     print_energies(outEnergies, &system);
+        print_system(outSystem, &system);
+        print_energies(outEnergies, &system);
 
-    //     for (int j = 0; j < system.tdump; j++)
-    //     {
-    //         int resultCode = velverlet_ndim_npart(system.dt, system.G, system.nBodies, SPATIAL_DIM, system.masses, system.coord, system.vel,
-    //                                               force, &f_o, &grav_force);
-    //         if (resultCode == -1)
-    //         {
-    //             return 1;
-    //         }
-    //     }
-    // }
+        for (int j = 0; j < system.tdump; j++)
+        {
+            int resultCode = velverlet_ndim_npart(system.dt, system.G, system.nBodies, SPATIAL_DIM, system.masses, system.coord, system.vel,
+                                                  force, &f_o, &grav_force);
+            if (resultCode == -1)
+            {
+                return 1;
+            }
+        }
+    }
 
     fclose(outSystem);
     fclose(outEnergies);
