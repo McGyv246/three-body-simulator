@@ -22,11 +22,11 @@ dell'energia totale.
 
 #define MAX_LEN 1024
 #define SPATIAL_DIM 3
+#define FUNNY
 
 // per rendere più facile l'uso del programma poniamo i nomi dei file di output come macro
 #define OUTPUT_SYSTEM "traj.dat"
 #define OUTPUT_ENERGIES "energies.dat"
-#define FUNNY
 
 #ifdef FUNNY
 #include <time.h>
@@ -102,9 +102,6 @@ int main(int argc, char const *argv[])
     outSystem = fopen(OUTPUT_SYSTEM, "w");
     outEnergies = fopen(OUTPUT_ENERGIES, "w");
 
-    print_header(outSystem, &system, "time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
-    print_header(outEnergies, &system, "kinetic energy,  potential energy,  total energy");
-
     if (!outSystem || !outEnergies)
     {
         fprintf(stderr, "\nErrore nell'apertura dei file di output\n\n");
@@ -126,6 +123,10 @@ int main(int argc, char const *argv[])
 
     // calcolo la forza iniziale per ottenere l'accelerazione iniziale
     grav_force(system.coord, system.masses, system.G, system.nBodies, force);
+
+    // stampa dell'header nei due file di output
+    print_header(outSystem, &system, "time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
+    print_header(outEnergies, &system, "kinetic energy,  potential energy,  total energy");
 
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
     int totPrint = (int)(system.T / system.tdump);
