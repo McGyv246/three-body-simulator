@@ -1,6 +1,6 @@
 # Struttura codice
 In geom.c abbiamo inserito le funzioni geometriche ved_diff, dist e scal.
-In integrator.c abbiamo inserito soltanto l'implementazionedi velocity verlet.
+In integrator.c abbiamo inserito soltanto l'implementazione di velocity verlet.
 In main.c abbiamo inserito la lettura dell'input, la scrittura dell'output, le funzioni di calcolo della forza e dell'energia e il codice che orchestra l'esecuzione di tutto il programma.
 
 
