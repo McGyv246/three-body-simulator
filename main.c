@@ -8,8 +8,19 @@ In particolare la funzione grav_force va passata in input alla funzione velverle
 lì definita per il puntatore a funzione (si legga il commento all'interno di velverlet_ndim_npart per chiarimenti sul perché
 non prende come parametro la struct physicalSystem).
 
-Abbiamo deciso di utilizzare long double al posto di double per attenuare la fluttuazione sulle ultime cifre decimali stampate 
-dell'energia totale.
+Abbiamo deciso di utilizzare long double al posto di double per attenuare la fluttuazione sulle ultime cifre decimali stampate
+dell'energia totale (con 9 cifre decimali di solito non cambia neanche l'ultima cifra).
+Abbiamo però riscontrato un problema: questo funziona soltanto su windows con wsl (nello specifico con processori x86) e non
+MacOS con processori Arm64. Questo perché il mentre con x86 long double è di 128 bit, con Arm64 long double è di 64 bit, esattamente
+come double normale.
+Per verificare si provi ad eseguire il seguente codice:
+printf("%lu  %lu\n", sizeof(double), sizeof(long double));
+
+In base a quanto trovato su internet l'unico modo per aggirare questa limitazione sarebbero delle librerie
+che fanno simulazioni lato software, però molto più lente rispetto al supporto nativo da parte dell'hardware.
+
+La differenza purtroppo è notevole, dato che, ad esempio utilizzando input_2.dat con long double su windows si ottiene che
+la prima energia totale stampata è -2.085220066, mentre l'ultima è -2.085220066 (uguale)
 */
 
 #include <stdio.h>
@@ -22,11 +33,13 @@ dell'energia totale.
 
 #define MAX_LEN 1024
 #define SPATIAL_DIM 3
-#define FUNNY
 
 // per rendere più facile l'uso del programma poniamo i nomi dei file di output come macro
 #define OUTPUT_SYSTEM "traj.dat"
 #define OUTPUT_ENERGIES "energies.dat"
+
+// Usare -UFUNNY a compilazione per rimuovere la macro
+#define FUNNY
 
 #ifdef FUNNY
 #include <time.h>
@@ -61,9 +74,7 @@ int main(int argc, char const *argv[])
     FILE *inFile;
     int ans;
 
-    struct physicalSystem system = {.nBodies = -1, .G = -1.L, .dt = -1.L, .tdump = -1, .T = -1, .masses = NULL, .coord = NULL, 
-    .vel = NULL};
-
+    struct physicalSystem system = {.nBodies = -1, .G = -1.L, .dt = -1.L, .tdump = -1, .T = -1, .masses = NULL, .coord = NULL, .vel = NULL};
 
 #ifdef FUNNY
     srand(time(NULL));
@@ -108,14 +119,11 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    if ((system.acc = (long double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(long double))) == NULL)
-    {
-        fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
-        return 1;
-    }
-
+    system.acc = (long double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(long double));
     long double *force, *f_o = NULL;
-    if ((force = (long double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(long double))) == NULL)
+    force = (long double *)malloc(system.nBodies * SPATIAL_DIM * sizeof(long double));
+
+    if (system.acc == NULL || force == NULL)
     {
         fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
         return 1;
@@ -229,36 +237,25 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 
     int nChar, nTotChar, bodyNumber;
 
-    // codice che permette di puntare in modo "static" alla heap, in questo modo creiamo due
-    // vettori di dimensione dinamica direttamente nella funzione (che vengono inizializzati solo una volta per esecuzione)
+    // I puntatori nella struct sono inizializzati soltanto quando sono NULL, quindi una volta per esecuzione del programma.
     if (!system->masses)
     {
         system->masses = (long double *)malloc(system->nBodies * sizeof(long double));
-        if (!system->masses)
-        {
-            fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
-            return -2;
-        }
     }
 
     if (!system->coord)
     {
         system->coord = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
-        if (!system->coord)
-        {
-            fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
-            return -2;
-        }
     }
 
     if (!system->vel)
     {
         system->vel = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
-        if (!system->vel)
-        {
-            fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
-            return -2;
-        }
+    }
+
+    if (system->masses == NULL || system->coord == NULL || system->vel == NULL)
+    {
+        return -2;
     }
 
     // lettura del numero di corpo di cui si stanno leggendo posizioni e velocità di partenza
