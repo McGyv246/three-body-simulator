@@ -24,6 +24,11 @@ non prende come parametro la struct physicalSystem).
 #define OUTPUT_SYSTEM "traj.dat"
 #define OUTPUT_ENERGIES "energies.dat"
 
+#ifdef FUNNY
+#include <time.h>
+#define N_QUOTES 3
+#endif
+
 // creazione della struct physicalSystem, contenente le variabili di interesse del sistema e le posizioni e velocità dei corpi
 // ad un dato istante
 struct physicalSystem
@@ -52,6 +57,10 @@ int main(int argc, char const *argv[])
     FILE *inFile;
     int ans;
     struct physicalSystem system = {.nBodies = -1, .G = -1, .dt = -1, .tdump = -1, .T = -1};
+
+#ifdef FUNNY
+    srand(time(NULL));
+#endif
 
     // errore in caso non sia stato letto alcun file in input
     if (argc < 2)
@@ -110,31 +119,31 @@ int main(int argc, char const *argv[])
     // calcolo la forza iniziale per ottenere l'accelerazione iniziale
     grav_force(system.coord, system.masses, system.G, system.nBodies, force);
 
-    // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
-    int totPrint = (int)(system.T / system.tdump);
-    for (int i = 0; i < totPrint; i++)
-    {
-        for (int j = 0; j < system.nBodies; j++)
-        {
-            for (int k = 0; k < SPATIAL_DIM; k++)
-            {
-                system.acc[k + SPATIAL_DIM * j] = force[k + SPATIAL_DIM * j] / system.masses[k];
-            }
-        }
+    // // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
+    // int totPrint = (int)(system.T / system.tdump);
+    // for (int i = 0; i < totPrint; i++)
+    // {
+    //     for (int j = 0; j < system.nBodies; j++)
+    //     {
+    //         for (int k = 0; k < SPATIAL_DIM; k++)
+    //         {
+    //             system.acc[k + SPATIAL_DIM * j] = force[k + SPATIAL_DIM * j] / system.masses[k];
+    //         }
+    //     }
 
-        print_system(outSystem, &system);
-        print_energies(outEnergies, &system);
+    //     print_system(outSystem, &system);
+    //     print_energies(outEnergies, &system);
 
-        for (int j = 0; j < system.tdump; j++)
-        {
-            int resultCode = velverlet_ndim_npart(system.dt, system.G, system.nBodies, SPATIAL_DIM, system.masses, system.coord, system.vel,
-                                                  force, &f_o, &grav_force);
-            if (resultCode == -1)
-            {
-                return 1;
-            }
-        }
-    }
+    //     for (int j = 0; j < system.tdump; j++)
+    //     {
+    //         int resultCode = velverlet_ndim_npart(system.dt, system.G, system.nBodies, SPATIAL_DIM, system.masses, system.coord, system.vel,
+    //                                               force, &f_o, &grav_force);
+    //         if (resultCode == -1)
+    //         {
+    //             return 1;
+    //         }
+    //     }
+    // }
 
     fclose(outSystem);
     fclose(outEnergies);
@@ -367,7 +376,17 @@ double Epot(const double *posVec, const double *masses, const double G, const in
  */
 void print_header(FILE *outFile, struct physicalSystem *system, char *format)
 {
-    fprintf(outFile, "#In physics, you don't have to go around making trouble for yourself. Nature does it for you.  (Frank Wilczek)\n");
+#ifdef FUNNY
+    char *quotes[N_QUOTES] =
+        {"Above all, don't fear difficult moments. The best comes from them.  (Rita Levi-Montalcini)",
+         "In physics, you don't have to go around making trouble for yourself. Nature does it for you.  (Frank Wilczek)",
+         "If you thought that science was certain - well, that is just an error on your part.  (Richard P. Feynman)"};
+
+    int r = rand() % N_QUOTES;
+
+    fprintf(outFile, "#%s\n", quotes[r]);
+#endif
+
     fprintf(outFile, "#HDR N\t%d\n", system->nBodies);
     fprintf(outFile, "#HDR G\t%lf\n", system->G);
     fprintf(outFile, "#HDR m\t");
