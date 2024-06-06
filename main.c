@@ -34,6 +34,7 @@ invece su Arm64 la prima è sempre -2.085220066, mentre l'ultima è -2.085220034
 
 #define MAX_LEN 1024
 #define SPATIAL_DIM 3
+#define N_HEADERS 5
 
 // per rendere più facile l'uso del programma poniamo i nomi dei file di output come macro
 #define OUTPUT_SYSTEM "traj.dat"
@@ -194,44 +195,56 @@ int read_input(FILE *inFile, struct physicalSystem *system)
         return -1;
     }
 
-    // serie di controlli che cerca nBodies, G, dt, tdump e T nell'header e che esclude eventuali commenti
+    static int readHeadersCounter = 0;
+
+    /*
+    Serie di controlli che cerca nBodies, G, dt, tdump e T nell'header e che esclude eventuali commenti.
+
+    Abbiamo optato per questa versione non molto elegante perché anche utilizzando un vettore contenente i nomi degli header
+    e un vettore in cui inserire i valori letti nelle posizioni corrispondenti ad un certo punto si sarebbe dovuto assegnare
+    i valori ricavati alla struct con un codice simile. Inoltre così è più facilmente mantenibile in quanto in caso si aggiungesse
+    un header basterebbe aggiungere un if qui e aggiornare la macro N_HEADERS, mentre nel caso alternativo spiegato sopra
+    bisognerebbe modificare il vettore con i nomi degli header e la funzione che assegna le variabili alla struct, oltre alla macro.
+    Inoltre quell'approccio alternativo avrebbe potuto creare problemi nel casting da long double a integer delle variabili intere lette,
+    con il rischio di troncamenti sconvenienti.
+    */
     if (line[0] == '#')
     {
         sscanf(line, "%4s", str);
         if (strcmp(str, "#HDR") == 0)
         {
             sscanf(line, "%*s %s", var);
-            if (strncmp(var, "N", 1) == 0)
+            if (strncmp(var, "N", 1) == 0 && system->nBodies < 0)
             {
                 sscanf(line, "%*s %*s %d", &system->nBodies);
-                return 0;
+                readHeadersCounter++;
             }
-            if (strncmp(var, "G", 1) == 0)
+            else if (strncmp(var, "G", 1) == 0 && system->G < 0)
             {
                 sscanf(line, "%*s %*s %Lf", &system->G);
-                return 0;
+                readHeadersCounter++;
             }
-            if (strncmp(var, "dt", 2) == 0)
+            else if (strncmp(var, "dt", 2) == 0 && system->dt < 0)
             {
                 sscanf(line, "%*s %*s %Lf", &system->dt);
-                return 0;
+                readHeadersCounter++;
             }
-            if (strncmp(var, "tdump", 5) == 0)
+            else if (strncmp(var, "tdump", 5) == 0 && system->tdump < 0)
             {
                 sscanf(line, "%*s %*s %d", &system->tdump);
-                return 0;
+                readHeadersCounter++;
             }
-            if (strncmp(var, "T", 1) == 0)
+            else if (strncmp(var, "T", 1) == 0 && system->T < 0)
             {
                 sscanf(line, "%*s %*s %d", &system->T);
-                return 0;
+                readHeadersCounter++;
             }
         }
         return 0;
     }
 
     // controllo che siano stati letti i dati necessari per l'esecuzione del programma
-    if (system->nBodies < 0 || system->G < 0 || system->dt < 0 || system->tdump < 0 || system->T < 0)
+    if (readHeadersCounter != N_HEADERS)
     {
         return -2;
     }
