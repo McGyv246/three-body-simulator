@@ -1,28 +1,4 @@
 // gcc -std=c99 -Wall -Wpedantic -O3 main.c integrator.c geom.c -o main.exe -lm
-/*
-NOTE: le funzioni grav_force, Ekin ed Epot non prendono la struct physicalSystem come parametro perché
-abbiamo ritenuto che le rendesse più generali e riutilizzabili in altri contesti, oltre a rendere molto più chiaro che
-cosa viene utilizzato per i calcoli della funzione (cosa che sarebbe nascosta se si utilizzasse la struct).
-
-In particolare la funzione grav_force va passata in input alla funzione velverlet_ndim_npart e quindi deve rispettare l'interfaccia
-lì definita per il puntatore a funzione (si legga il commento all'interno di velverlet_ndim_npart per chiarimenti sul perché
-non prende come parametro la struct physicalSystem).
-
-Abbiamo deciso di utilizzare long double al posto di double per attenuare la fluttuazione sulle ultime cifre decimali stampate
-dell'energia totale (con 9 cifre decimali di solito non cambia neanche l'ultima cifra).
-Abbiamo però riscontrato un problema: questo funziona soltanto su windows con wsl (nello specifico con processori x86) e non
-MacOS con processori Arm64. Questo perché il mentre con x86 long double è di 128 bit, con Arm64 long double è di 64 bit, esattamente
-come double normale (si noti che con alcuni processori long double è a 80 bit).
-Per verificare si provi ad eseguire il seguente codice:
-printf("%lu  %lu\n", sizeof(double), sizeof(long double));
-
-In base a quanto trovato su internet l'unico modo per aggirare questa limitazione sarebbero delle librerie
-che fanno simulazioni lato software, però molto più lente rispetto al supporto nativo da parte dell'hardware.
-
-La differenza purtroppo è notevole, dato che, ad esempio utilizzando input_2.dat con long double su x86 si ottiene che
-la prima energia totale stampata è -2.085220066, mentre l'ultima (la numero 100005) è -2.085220066 (uguale),
-invece su Arm64 la prima è sempre -2.085220066, mentre l'ultima è -2.085220034 (le ultime 2 cifre significative sono cambiate).
-*/
 
 #include <stdio.h>
 #include <stdlib.h>
