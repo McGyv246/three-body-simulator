@@ -12,7 +12,7 @@ Abbiamo deciso di utilizzare long double al posto di double per attenuare la flu
 dell'energia totale (con 9 cifre decimali di solito non cambia neanche l'ultima cifra).
 Abbiamo però riscontrato un problema: questo funziona soltanto su windows con wsl (nello specifico con processori x86) e non
 MacOS con processori Arm64. Questo perché il mentre con x86 long double è di 128 bit, con Arm64 long double è di 64 bit, esattamente
-come double normale.
+come double normale (si noti che con alcuni processori long double è a 80 bit).
 Per verificare si provi ad eseguire il seguente codice:
 printf("%lu  %lu\n", sizeof(double), sizeof(long double));
 
@@ -76,8 +76,6 @@ int main(int argc, char const *argv[])
     FILE *inFile;
     int ans;
 
-    // system = {.nBodies = -1, .G = -1.L, .dt = -1.L, .tdump = -1, .T = -1, .masses = NULL, .coord = NULL, .vel = NULL};
-
     struct physicalSystem *system = (struct physicalSystem *)malloc(sizeof(struct physicalSystem));
     system->nBodies = -1;
     system->G = -1.L;
@@ -113,7 +111,7 @@ int main(int argc, char const *argv[])
     {
         if (ans == -2)
         {
-            fprintf(stderr, "\nErrore nella lettura del file in input: il file deve contenere nBodies, G, dt, tdump e T\n\n");
+            fprintf(stderr, "\nErrore nella lettura del file in input: il file deve contenere nBodies, G, dt, tdump e T positivi.\n\n");
             return 1;
         }
     }
@@ -224,30 +222,63 @@ int read_input(FILE *inFile, struct physicalSystem *system)
         sscanf(line, "%4s", str);
         if (strcmp(str, "#HDR") == 0)
         {
+            int intRead = -1;
+            long double doubleRead = -1.L;
             sscanf(line, "%*s %s", var);
             if (strncmp(var, "N", 1) == 0 && system->nBodies < 0)
             {
-                sscanf(line, "%*s %*s %d", &system->nBodies);
+                sscanf(line, "%*s %*s %d", &intRead);
+                if (intRead < 0)
+                {
+                    return -2;
+                }
+
+                system->nBodies = intRead;
                 readHeadersCounter++;
             }
             else if (strncmp(var, "G", 1) == 0 && system->G < 0)
             {
-                sscanf(line, "%*s %*s %Lf", &system->G);
+                sscanf(line, "%*s %*s %Lf", &doubleRead);
+                if (doubleRead < 0)
+                {
+                    return -2;
+                }
+
+                system->G = doubleRead;
+
                 readHeadersCounter++;
             }
             else if (strncmp(var, "dt", 2) == 0 && system->dt < 0)
             {
-                sscanf(line, "%*s %*s %Lf", &system->dt);
+                sscanf(line, "%*s %*s %Lf", &doubleRead);
+                if (doubleRead < 0)
+                {
+                    return -2;
+                }
+
+                system->dt = doubleRead;
                 readHeadersCounter++;
             }
             else if (strncmp(var, "tdump", 5) == 0 && system->tdump < 0)
             {
-                sscanf(line, "%*s %*s %d", &system->tdump);
+                sscanf(line, "%*s %*s %d", &intRead);
+                if (intRead < 0)
+                {
+                    return -2;
+                }
+
+                system->tdump = intRead;
                 readHeadersCounter++;
             }
             else if (strncmp(var, "T", 1) == 0 && system->T < 0)
             {
-                sscanf(line, "%*s %*s %d", &system->T);
+                sscanf(line, "%*s %*s %d", &intRead);
+                if (intRead < 0)
+                {
+                    return -2;
+                }
+
+                system->T = intRead;
                 readHeadersCounter++;
             }
         }
@@ -280,6 +311,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 
     if (system->masses == NULL || system->coord == NULL || system->vel == NULL)
     {
+        fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
         return -2;
     }
 
