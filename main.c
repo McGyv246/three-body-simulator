@@ -24,6 +24,11 @@ non prende come parametro la struct physicalSystem).
 #define OUTPUT_SYSTEM "traj.dat"
 #define OUTPUT_ENERGIES "energies.dat"
 
+#ifdef FUNNY
+#include <time.h>
+#define N_QUOTES 3
+#endif
+
 // creazione della struct physicalSystem, contenente le variabili di interesse del sistema e le posizioni e velocità dei corpi
 // ad un dato istante
 struct physicalSystem
@@ -52,6 +57,10 @@ int main(int argc, char const *argv[])
     FILE *inFile;
     int ans;
     struct physicalSystem system = {.nBodies = -1, .G = -1, .dt = -1, .tdump = -1, .T = -1};
+
+#ifdef FUNNY
+    srand(time(NULL));
+#endif
 
     // errore in caso non sia stato letto alcun file in input
     if (argc < 2)
@@ -367,7 +376,17 @@ double Epot(const double *posVec, const double *masses, const double G, const in
  */
 void print_header(FILE *outFile, struct physicalSystem *system, char *format)
 {
-    fprintf(outFile, "#In physics, you don't have to go around making trouble for yourself. Nature does it for you.  (Frank Wilczek)\n");
+#ifdef FUNNY
+    char *quotes[N_QUOTES] =
+        {"Above all, don't fear difficult moments. The best comes from them.  (Rita Levi-Montalcini)",
+         "In physics, you don't have to go around making trouble for yourself. Nature does it for you.  (Frank Wilczek)",
+         "If you thought that science was certain - well, that is just an error on your part.  (Richard P. Feynman)"};
+
+    int r = rand() % N_QUOTES;
+
+    fprintf(outFile, "#%s\n", quotes[r]);
+#endif
+
     fprintf(outFile, "#HDR N\t%d\n", system->nBodies);
     fprintf(outFile, "#HDR G\t%lf\n", system->G);
     fprintf(outFile, "#HDR m\t");
