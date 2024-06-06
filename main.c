@@ -38,7 +38,7 @@ la prima energia totale stampata è -2.085220066, mentre l'ultima è -2.08522006
 #define OUTPUT_SYSTEM "traj.dat"
 #define OUTPUT_ENERGIES "energies.dat"
 
-// Usare -UFUNNY a compilazione per rimuovere la macro
+// Rimuovere la riga qui sotto per evitare le citazioni all'inizio dei file di output
 #define FUNNY
 
 #ifdef FUNNY
