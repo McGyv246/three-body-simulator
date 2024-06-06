@@ -28,6 +28,7 @@ invece su Arm64 la prima è sempre -2.085220066, mentre l'ultima è -2.085220034
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <limits.h>
 
 #include "geom.h"
 #include "integrator.h"
@@ -145,6 +146,13 @@ int main(int argc, char const *argv[])
     // stampa dell'header nei due file di output
     print_header(outSystem, system, "time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
     print_header(outEnergies, system, "kinetic energy,  potential energy,  total energy");
+
+    // Controllo di overflow del numero di iterazioni totali
+    if (system->T > INT_MAX * system->tdump)
+    {
+        fprintf(stderr, "\nErrore: i valori specificati di tdump e T richiedono un numero di iterazioni non supportato.\n\n");
+        return 1;
+    }
 
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
     int totPrint = (int)(system->T / system->tdump);
