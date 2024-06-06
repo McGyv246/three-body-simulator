@@ -31,6 +31,8 @@
  * - un puntatore a un vettore di spatialDim * nBodies elementi double in cui la funzione inserisce le spatialDim componenti delle
  * forze applicate a nBodies corpi.
  *
+ * @return -1 in caso di errore, 0 di default.
+ *
  * @note f_o dovrà essere liberato con la funzione free() dato che allocato nell'heap.
  */
 int velverlet_ndim_npart(const double dt, const double forceConst, const int nBodies, const int spatialDim, const double *masses,
@@ -137,29 +139,27 @@ int velverlet_ndim_npart(const double dt, const double forceConst, const int nBo
     }
 
     for (int j = 0; j < nBodies; j++)
+    {
+        for (int i = 0; i < spatialDim; i++)
         {
-            for (int i = 0;i < spatialDim; i++)
-            {
-                coord[i + j * spatialDim] = coord[i + j * spatialDim] + dt * vel[i + j * spatialDim] + 1. / (2. * masses[j]) * dt
-                * dt * *(*f_o + i + j * spatialDim);
-            }
+            coord[i + j * spatialDim] = coord[i + j * spatialDim] + dt * vel[i + j * spatialDim] + 1. / (2. * masses[j]) * dt * dt * *(*f_o + i + j * spatialDim);
         }
+    }
 
     F(coord, masses, forceConst, nBodies, force);
 
     for (int j = 0; j < nBodies; j++)
+    {
+        for (int i = 0; i < spatialDim; i++)
         {
-            for (int i = 0;i < spatialDim; i++)
-            {
-                vel[i + j * spatialDim] = vel[i + j * spatialDim] + 1. / (2. * masses[j]) * dt * (*(*f_o + i + j * spatialDim)
-                + force[i + j * spatialDim]);
+            vel[i + j * spatialDim] = vel[i + j * spatialDim] + 1. / (2. * masses[j]) * dt * (*(*f_o + i + j * spatialDim) + force[i + j * spatialDim]);
 
-                // Utilizzare malloc nella funzione che calcola la forza sarebbe stato dispendioso in termini di prestazioni.
-                // I valori vengono quindi copiati per componente dopo essere stati utilizzati nel conto.
-                // Questo risulta più efficiente assumendo che in numero di componenti è piccolo (cosa che ha senso assumere).
-                *(*f_o + i + j * spatialDim) = force[i + j * spatialDim];
-            }
+            // Utilizzare malloc nella funzione che calcola la forza sarebbe stato dispendioso in termini di prestazioni.
+            // I valori vengono quindi copiati per componente dopo essere stati utilizzati nel conto.
+            // Questo risulta più efficiente assumendo che in numero di componenti è piccolo (cosa che ha senso assumere).
+            *(*f_o + i + j * spatialDim) = force[i + j * spatialDim];
         }
+    }
 
     return 0;
 }
