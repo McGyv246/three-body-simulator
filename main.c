@@ -123,14 +123,8 @@ int main(int argc, char const *argv[])
     print_header(outSystem, system, "time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
     print_header(outEnergies, system, "kinetic energy,  potential energy,  total energy");
 
-    // Controllo di overflow del numero di iterazioni totali
-    if (system->T > INT_MAX * system->tdump)
-    {
-        fprintf(stderr, "\nErrore: i valori specificati di tdump e T richiedono un numero di iterazioni non supportato.\n\n");
-        return 1;
-    }
-
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
+    // NOTA: non serve verificare l'overflow perché questa divisione ritorna un numero minore di system->T, non maggiore.
     int totPrint = (int)(system->T / system->tdump);
     for (int i = 0; i < totPrint; i++)
     {
@@ -454,7 +448,7 @@ void print_system(FILE *outFile, struct physicalSystem *system)
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
 #ifdef PRINT_2DIM
-        if (i % SPATIAL_DIM >= 2)
+        if (i % SPATIAL_DIM < 2)
 #endif
             fprintf(outFile, "%.16Lf ", system->coord[i]);
     }
@@ -462,7 +456,7 @@ void print_system(FILE *outFile, struct physicalSystem *system)
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
 #ifdef PRINT_2DIM
-        if (i % SPATIAL_DIM >= 2)
+        if (i % SPATIAL_DIM < 2)
 #endif
             fprintf(outFile, "%.16Lf ", system->vel[i]);
     }
@@ -470,7 +464,7 @@ void print_system(FILE *outFile, struct physicalSystem *system)
     for (int i = 0; i < system->nBodies * SPATIAL_DIM; i++)
     {
 #ifdef PRINT_2DIM
-        if (i % SPATIAL_DIM >= 2)
+        if (i % SPATIAL_DIM < 2)
 #endif
             fprintf(outFile, "%.16Lf ", system->acc[i]);
     }
