@@ -41,3 +41,5 @@ Le funzioni grav_force, Ekin ed Epot non prendono la struct physicalSystem come 
 In particolare la funzione grav_force va passata in input alla funzione velverlet_ndim_npart e quindi deve rispettare l'interfaccia lì definita per il puntatore a funzione (si legga il commento sopra per chiarimenti sul perché non prende come parametro la struct physicalSystem).
 
 Il calcolo della forza è stato ottimizzato evitando di calcolare due volte la forza tra gli stessi due corpi. Questo è stato ottenuto salvando nel vettore delle forze nelle posizioni corrispondenti ai due corpi presi in esame la forza ottenuta tra i 2, una positiva e una negativa (dato che cambia il verso). Questo riduce notevolmente il numero di calcoli necessari, in particolare all'aumentare dei corpi considerati.
+
+La macro PRINT_2DIM è utile per far sì che il programma stampi l'output in 2 dimensioni soltanto (invece di quelle specificate) in modo da rendere più semplice utilizzare gli output di questo programma come input dei programmi scritti in precedenza, in modo da poterne facilmente verificare la correttezza.
