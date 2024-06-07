@@ -13,7 +13,7 @@
 #define SPATIAL_DIM 3
 #define N_HEADERS 5
 
-// per rendere più facile l'uso del programma poniamo i nomi dei file di output come macro
+// per rendere più facile il mantenimento del programma poniamo i nomi dei file di output come macro
 #define OUTPUT_SYSTEM "traj.dat"
 #define OUTPUT_ENERGIES "energies.dat"
 
@@ -25,8 +25,21 @@
 #define N_QUOTES 3
 #endif
 
-// creazione della struct physicalSystem, contenente le variabili di interesse del sistema e le posizioni e velocità dei corpi
-// ad un dato istante
+/** 
+ * Creazione della struct physicalSystem contenente le variabili di interesse per un sistema ad nBodies corpi soggetti a forze di natura
+ * gravitazionale: 
+ * - nBodies : numero di corpi;
+ * - G : costante di gravitazione;
+ * - dt : intervallo di integrazione (vedere integrator.c);
+ * - tdump : numero di integrazioni ogni quanto stampare nei file di output;
+ * - T : numero totale di integrazioni da eseguire;
+ * - masses : puntatore a cui assegnare le masse dei corpi del sistema;
+ * - coord : puntatore a cui assegnare le coordinate in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante;
+ * - vel : puntatore a cui assegnare le velocità in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante;
+ * - acc : puntatore a cui assegnare le accelerazioni in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante.
+ * 
+ * NOTA : le accelerazioni sono calcolate solo prima di stampare nei file di output.
+ */
 struct physicalSystem
 {
     int nBodies;
