@@ -174,8 +174,7 @@ int main(int argc, char const *argv[])
  */
 int read_input(FILE *inFile, struct physicalSystem *system)
 {
-    char line[MAX_LEN], str[5];
-    char var[6];
+    char line[MAX_LEN], str[5], var[6];
 
     if (fgets(line, MAX_LEN, inFile) == NULL)
     {
@@ -203,53 +202,43 @@ int read_input(FILE *inFile, struct physicalSystem *system)
             int intRead = -1;
             long double doubleRead = -1.L;
             sscanf(line, "%*s %s", var);
-            if (strncmp(var, "N", 1) == 0 && system->nBodies < 0)
+
+            sscanf(line, "%*s %*s %Lf", &doubleRead);
+            if (doubleRead <= 0)
+                return -2;
+
+            if (strncmp(var, "G", 1) == 0 && system->G < 0)
             {
-                sscanf(line, "%*s %*s %d", &intRead);
-
-                if (intRead < 0)
-                    return -2;
-
-                system->nBodies = intRead;
-                readHeadersCounter++;
-            }
-            else if (strncmp(var, "G", 1) == 0 && system->G < 0)
-            {
-                sscanf(line, "%*s %*s %Lf", &doubleRead);
-
-                if (doubleRead < 0)
-                    return -2;
-
                 system->G = doubleRead;
                 readHeadersCounter++;
+                return 0;
             }
             else if (strncmp(var, "dt", 2) == 0 && system->dt < 0)
             {
-                sscanf(line, "%*s %*s %Lf", &doubleRead);
-
-                if (doubleRead < 0)
-                    return -2;
-
                 system->dt = doubleRead;
+                readHeadersCounter++;
+                return 0;
+            }
+
+            // Se si arriva qui allora il valore atteso è un numero intero, quindi si può controllare che sia maggiore di 0
+            // se si fosse fatto prima allora sarebbe potuto essere 0 in caso fosse un double minore di 1 per via di troncamento
+            sscanf(line, "%*s %*s %d", &intRead);
+
+            if (intRead <= 0)
+                return -2;
+
+            if (strncmp(var, "N", 1) == 0 && system->nBodies < 0)
+            {
+                system->nBodies = intRead;
                 readHeadersCounter++;
             }
             else if (strncmp(var, "tdump", 5) == 0 && system->tdump < 0)
             {
-                sscanf(line, "%*s %*s %d", &intRead);
-
-                if (intRead < 0)
-                    return -2;
-
                 system->tdump = intRead;
                 readHeadersCounter++;
             }
             else if (strncmp(var, "T", 1) == 0 && system->T < 0)
             {
-                sscanf(line, "%*s %*s %d", &intRead);
-
-                if (intRead < 0)
-                    return -2;
-
                 system->T = intRead;
                 readHeadersCounter++;
             }
