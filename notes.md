@@ -3,9 +3,18 @@ In geom.c abbiamo inserito le funzioni geometriche ved_diff, dist e scal.
 In integrator.c abbiamo inserito soltanto l'implementazione di velocity verlet.
 In main.c abbiamo inserito la lettura dell'input, la scrittura dell'output, le funzioni di calcolo della forza e dell'energia e il codice che orchestra l'esecuzione di tutto il programma.
 
+Per rendere il programma generico in modo da poter prendere in input masse diverse abbiamo aggiunto nei file di input una colonna dopo il tempo e prima delle coordinate che contiene la massa del corpo in quella riga (il formato quindi è "idx m x y z vx vy vz" nel caso di 3 dimensioni).
+
 
 # Note generali
 Il programma è stato strutturato per funzionare ad un numero di corpi arbitrario (specificato nel file di input al programma) e anche in un numero di dimensioni arbitrario (modificabile tramite la macro SPATIAL_DIM).
+
+## Parametri in input alle traiettorie
+Abbiamo fatto dei test per correggere i valori negli header dei file in input per ottenere risultati migliori. In tutti e 3 i file di input forniti il dt è adatto per contenere gli errori di integrazione.
+In particolare:
+- input_1.dat con i parametri specificati dà una traiettoria molto "spigolosa". Per ottenere una curva che descrive con maggiore precisione la traiettoria basta dividere tdump per 100 e T per 10. Questo è lecito in quanto con i dati attuali il programma completa svariati periodi dell'orbita.
+- input_2.dat con i valori specificati è stabile ma (supponiamo per errore) non presenta i valori delle velocità nello schema proposto. In particolare la velocità x del primo corpo. Comunque anche in un tempo di esecuzione più lungo del 50% rispetto a quello specificato in T nel file il sistema risulta stabile. Inoltre i valori di dt e tdump sono adatti per descrivere con precisione la traiettoria (magari tdump si potrebbe aumentare un po' per diminuire il numero di righe di output).
+- input_3.dat con i parametri specificati non porta a termine un periodo dell'orbita. Raddoppiando si tdump che T si ottiene lo stesso numero di righe e un periodo intero.
 
 ## Utilizzo malloc e vettori
 Visto che le funzioni geometriche, quelle dell'energia e quelle dell'integrazione vengono chiamate moltissime volte abbiamo evitato di utilizzare al loro interno malloc, dato che meno efficiente di array nello stack o array preallocati. Inoltre in molti casi abbiamo evitato l'uso di array nello stack per non rischiare di incorrere in stack overflow (che avverrebbe all'aumentare di corpi e/o dimensioni). Per questo tutte queste funzioni inseriscono in dei vettori passati in input il loro output. Ci siamo limitati ad utilizzare malloc per allocare i vettori necessari all'esecuzione del programma (una sola volta per vettore).
