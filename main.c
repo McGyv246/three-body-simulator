@@ -206,10 +206,9 @@ int read_input(FILE *inFile, struct physicalSystem *system)
             if (strncmp(var, "N", 1) == 0 && system->nBodies < 0)
             {
                 sscanf(line, "%*s %*s %d", &intRead);
+
                 if (intRead < 0)
-                {
                     return -2;
-                }
 
                 system->nBodies = intRead;
                 readHeadersCounter++;
@@ -217,22 +216,19 @@ int read_input(FILE *inFile, struct physicalSystem *system)
             else if (strncmp(var, "G", 1) == 0 && system->G < 0)
             {
                 sscanf(line, "%*s %*s %Lf", &doubleRead);
+
                 if (doubleRead < 0)
-                {
                     return -2;
-                }
 
                 system->G = doubleRead;
-
                 readHeadersCounter++;
             }
             else if (strncmp(var, "dt", 2) == 0 && system->dt < 0)
             {
                 sscanf(line, "%*s %*s %Lf", &doubleRead);
+
                 if (doubleRead < 0)
-                {
                     return -2;
-                }
 
                 system->dt = doubleRead;
                 readHeadersCounter++;
@@ -240,10 +236,9 @@ int read_input(FILE *inFile, struct physicalSystem *system)
             else if (strncmp(var, "tdump", 5) == 0 && system->tdump < 0)
             {
                 sscanf(line, "%*s %*s %d", &intRead);
+
                 if (intRead < 0)
-                {
                     return -2;
-                }
 
                 system->tdump = intRead;
                 readHeadersCounter++;
@@ -251,10 +246,9 @@ int read_input(FILE *inFile, struct physicalSystem *system)
             else if (strncmp(var, "T", 1) == 0 && system->T < 0)
             {
                 sscanf(line, "%*s %*s %d", &intRead);
+
                 if (intRead < 0)
-                {
                     return -2;
-                }
 
                 system->T = intRead;
                 readHeadersCounter++;
