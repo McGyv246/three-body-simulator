@@ -32,7 +32,7 @@
  * - G : costante di gravitazione;
  * - dt : intervallo di integrazione (vedere integrator.c);
  * - tdump : numero di integrazioni ogni quanto stampare nei file di output;
- * - T : numero totale di integrazioni da eseguire (il formato long int consente di evitare eventuali errori nella lettura di T)
+ * - T : numero totale di integrazioni da eseguire (il formato long int consente di evitare eventuali errori nella lettura di T);
  * - masses : puntatore a cui assegnare le masse dei corpi del sistema;
  * - coord : puntatore a cui assegnare le coordinate in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante;
  * - vel : puntatore a cui assegnare le velocità in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante;
