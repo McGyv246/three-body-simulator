@@ -32,7 +32,7 @@
  * - G : costante di gravitazione;
  * - dt : intervallo di integrazione (vedere integrator.c);
  * - tdump : numero di integrazioni ogni quanto stampare nei file di output;
- * - T : numero totale di integrazioni da eseguire;
+ * - T : numero totale di integrazioni da eseguire (il formato long int consente di evitare eventuali errori nella lettura di T)
  * - masses : puntatore a cui assegnare le masse dei corpi del sistema;
  * - coord : puntatore a cui assegnare le coordinate in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante;
  * - vel : puntatore a cui assegnare le velocità in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante;
@@ -46,7 +46,7 @@ struct physicalSystem
     long double G;
     long double dt;
     int tdump;
-    int T;
+    long int T;
     long double *masses;
     long double *coord;
     long double *vel;
@@ -133,13 +133,13 @@ int main(int argc, char const *argv[])
     grav_force(system->coord, system->masses, system->G, system->nBodies, force);
 
     // stampa dell'header nei due file di output
-    print_header(outSystem, system, "time,  coords (X,Y,Z),  velocities (X,Y,Z),  accelerations (X,Y,Z)");
-    print_header(outEnergies, system, "kinetic energy,  potential energy,  total energy");
+    print_header(outSystem, system, "system");
+    print_header(outEnergies, system, "energies");
 
     // ciclo generale che stampa nei file di output ogni "system.tdump" integrazioni
     // NOTA: non serve verificare l'overflow perché questa divisione ritorna un numero minore di system->T, non maggiore.
-    int totPrint = (int)(system->T / system->tdump);
-    for (int i = 0; i < totPrint; i++)
+    long int totPrint = (long int)(system->T / system->tdump);
+    for (long int i = 0; i < totPrint; i++)
     {
         for (int j = 0; j < system->nBodies; j++)
         {
@@ -178,12 +178,12 @@ int main(int argc, char const *argv[])
 }
 
 /**
- * Funzione che legge i dati di input a partire dal file fornito in esecuzione (ogni volta che viene chiamata legge una riga)
+ * Funzione che legge i dati di input a partire dal file fornito in esecuzione (ogni volta che viene chiamata legge una riga).
  *
- * @param inFile Puntatore al file fornito in esecuzione
- * @param system Puntatore alla struct contenente i dati relativi al sistema fisico considerato
+ * @param inFile Puntatore al file fornito in esecuzione.
+ * @param system Puntatore alla struct contenente i dati relativi al sistema fisico considerato.
  *
- * @return -1 per End of File; -2 in caso di errore; 0 di default
+ * @return -1 per End of File; -2 in caso di errore; 0 di default.
  */
 int read_input(FILE *inFile, struct physicalSystem *system)
 {
@@ -199,12 +199,12 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     /*
     Serie di controlli che cerca nBodies, G, dt, tdump e T nell'header e che esclude eventuali commenti.
 
-    Abbiamo optato per questa versione non molto elegante perché anche utilizzando un vettore contenente i nomi degli header
-    e un vettore in cui inserire i valori letti nelle posizioni corrispondenti ad un certo punto si sarebbe dovuto assegnare
-    i valori ricavati alla struct con un codice simile. Inoltre così è più facilmente mantenibile in quanto in caso si aggiungesse
-    un header basterebbe aggiungere un if qui e aggiornare la macro N_HEADERS, mentre nel caso alternativo spiegato sopra
-    bisognerebbe modificare il vettore con i nomi degli header e la funzione che assegna le variabili alla struct, oltre alla macro.
-    Inoltre quell'approccio alternativo avrebbe potuto creare problemi nel casting da long double a integer delle variabili intere lette,
+    Abbiamo optato per questa versione non molto elegante perché, anche utilizzando un vettore contenente i nomi degli header
+    e un vettore in cui inserire i valori letti nelle posizioni corrispondenti, ad un certo punto si sarebbe dovuto assegnare
+    i valori ricavati alla struct con un codice simile. La nostra versione è inoltre più facilmente mantenibile: aggiungendo un header 
+    basterebbe aggiungere un if qui e aggiornare la macro N_HEADERS, mentre, nel caso alternativo spiegato sopra, oltre alla macro 
+    bisognerebbe anche modificare il vettore con i nomi degli header e la funzione che assegna le variabili alla struct.
+    Quell'approccio alternativo avrebbe potuto creare problemi anche nel casting da long double a integer delle variabili intere lette,
     con il rischio di troncamenti sconvenienti.
     */
     if (line[0] == '#')
@@ -212,7 +212,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
         sscanf(line, "%4s", str);
         if (strcmp(str, "#HDR") == 0)
         {
-            int intRead = -1;
+            long int intRead = -1;
             long double doubleRead = -1.L;
             sscanf(line, "%*s %s", var);
 
@@ -235,7 +235,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 
             // Se si arriva qui allora il valore atteso è un numero intero, quindi si può controllare che sia maggiore di 0
             // se si fosse fatto prima allora sarebbe potuto essere 0 in caso fosse un double minore di 1 per via di troncamento
-            sscanf(line, "%*s %*s %d", &intRead);
+            sscanf(line, "%*s %*s %ld", &intRead);
 
             if (intRead <= 0)
                 return -2;
@@ -315,13 +315,13 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 
 /**
  * Funzione che, date le posizioni di un numero di corpi specificato in un dato istante, calcola le accelerazioni gravitazionali
- * agenti tra questi nel dato istante
+ * agenti tra questi nel dato istante.
  *
- * @param coord Puntatore al vettore di long double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ...,
- * @param masses Puntatore al vettore di long double contenente le masse dei corpi nel sistema
- * @param G Costante di gravitazione considerata per il calcolo della forza gravitazionale
- * @param nBodies Numero di corpi che compongono il sistema considerato
- * @param force Puntatore al vettore di long double in cui salvare le forze calcolate
+ * @param coord Puntatore al vettore di long double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ..., x21, ...
+ * @param masses Puntatore al vettore di long double contenente le masse dei corpi nel sistema.
+ * @param G Costante di gravitazione considerata per il calcolo della forza gravitazionale.
+ * @param nBodies Numero di corpi che compongono il sistema considerato.
+ * @param force Puntatore al vettore di long double in cui salvare le forze calcolate.
  */
 void grav_force(const long double *coord, const long double *masses, const long double G, const int nBodies, long double *force)
 {
@@ -352,13 +352,13 @@ void grav_force(const long double *coord, const long double *masses, const long 
 }
 
 /**
- * Funzione che calcola l'energia cinetica del sistema di un numero di corpi pari a nBodies
+ * Funzione che calcola l'energia cinetica del sistema di un numero di corpi pari a nBodies.
  *
- * @param velVec Puntatore al primo di long double contenente le velocità dei corpi
- * @param masses Puntatore al vettore di long double contenente le masse dei corpi
- * @param nBodies Numero intero del numero di corpi del sistema
+ * @param velVec Puntatore al primo di long double contenente le velocità dei corpi.
+ * @param masses Puntatore al vettore di long double contenente le masse dei corpi.
+ * @param nBodies Numero intero del numero di corpi del sistema.
  *
- * @return Valore long double dell'energia cinetica
+ * @return Valore long double dell'energia cinetica.
  */
 
 long double Ekin(const long double *velVec, const long double *masses, const int nBodies)
@@ -374,12 +374,12 @@ long double Ekin(const long double *velVec, const long double *masses, const int
 }
 
 /**
- * Funzione che calcola l'energia potenziale del sistema di un numero di corpi pari a nBodies
+ * Funzione che calcola l'energia potenziale del sistema di un numero di corpi pari a nBodies.
  *
- * @param posVec Puntatore al vettore di long double contenente le posizioni dei corpi
- * @param masses Puntatore al vettore di long double contenente le masse dei corpi
- * @param G costante di gravitazione universale
- * @param nBodies Numero intero del numero di corpi del sistema
+ * @param posVec Puntatore al vettore di long double contenente le posizioni dei corpi.
+ * @param masses Puntatore al vettore di long double contenente le masse dei corpi.
+ * @param G costante di gravitazione universale.
+ * @param nBodies Numero intero del numero di corpi del sistema.
  *
  * @return Valore long double dell'energia potenziale
  */
@@ -399,10 +399,12 @@ long double Epot(const long double *posVec, const long double *masses, const lon
 }
 
 /**
- * Funzione che stampa l'header per i file di output
+ * Funzione che stampa l'header per i file di output.
  *
- * @param outFile Puntatore al file di output
- * @param system Puntatore alla struct contenente le variabili relative al sistema
+ * @param outFile Puntatore al file di output.
+ * @param system Puntatore alla struct contenente le variabili relative al sistema.
+ * @param format Stringa indicante il tipo di format scelto ("system" o "energies" a seconda che si vogliano stampare la traiettoria
+ * del sistema o le energie del sistema).
  */
 void print_header(FILE *outFile, struct physicalSystem *system, char *format)
 {
@@ -425,15 +427,40 @@ void print_header(FILE *outFile, struct physicalSystem *system, char *format)
         fprintf(outFile, "%Lf ", system->masses[i]);
     }
     fprintf(outFile, "\n");
-    fprintf(outFile, "#format:\t%s\n", format);
+    
+    //controlli che scrivono il format dei dati nel file
+    fprintf(outFile, "#format:\t ");
+    if(strncmp(format, "system", 6) == 0)
+    {
+        fprintf(outFile, "time\t coords: (" );
+        for(int i = 0; i<SPATIAL_DIM; i++)
+        {
+            fprintf(outFile, " x%d",i);
+        }
+        fprintf(outFile, ")\t velocities: (");
+        for(int i = 0; i<SPATIAL_DIM; i++)
+        {
+            fprintf(outFile, " v%d",i);
+        }
+        fprintf(outFile, ")\t accelerations: (");
+        for(int i = 0; i<SPATIAL_DIM; i++)
+        {
+            fprintf(outFile, " a%d",i);
+        }
+        fprintf(outFile, ")\n");
+    }
+    else if(strncmp(format, "energies", 8) == 0)
+    {
+        fprintf(outFile, "kinetic energy\t potential energy\t total energy\n");
+    }
 }
 
 /**
  * Funzione che date le condizioni del sistema in un dato istante, stampa le posizioni, le velocità e le accelerazioni
- * del dato istante nel file specificato in outFile
+ * del dato istante nel file specificato in outFile.
  *
- * @param outFile Puntatore al file in cui stampare posizioni, velocità e accelerazioni del sistema
- * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema
+ * @param outFile Puntatore al file in cui stampare posizioni, velocità e accelerazioni del sistema.
+ * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema.
  */
 void print_system(FILE *outFile, struct physicalSystem *system)
 {
@@ -472,10 +499,10 @@ void print_system(FILE *outFile, struct physicalSystem *system)
 
 /**
  * Funzione che, date le condizioni del sistema in un dato istante, calcola energia cinetica, potenziale e totale nel dato istante.
- * Stampa poi tutto nel file specificato in outFile
+ * Stampa poi tutto nel file specificato in outFile.
  *
- * @param outFile Puntatore al file in cui stampare energia cinetica, potenziale e totale del sistema in un dato istante
- * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema
+ * @param outFile Puntatore al file in cui stampare energia cinetica, potenziale e totale del sistema in un dato istante.
+ * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema.
  */
 void print_energies(FILE *outFile, struct physicalSystem *system)
 {
