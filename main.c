@@ -85,6 +85,7 @@ int main(int argc, char const *argv[])
     if (argc < 2)
     {
         fprintf(stderr, "\nNon è stato specificato un file di input.\n\n");
+        free_struct_pointers(system);
         return 1;
     }
 
@@ -94,6 +95,7 @@ int main(int argc, char const *argv[])
     if (!inFile)
     {
         fprintf(stderr, "\nImpossibile aprire il file: %s\n\n", argv[1]);
+        free_struct_pointers(system);
         return 1;
     }
 
@@ -103,6 +105,10 @@ int main(int argc, char const *argv[])
         if (ans == -2)
         {
             fprintf(stderr, "\nErrore nella lettura del file in input: il file deve contenere nBodies, G, dt, tdump e T positivi.\n\n");
+
+            fclose(inFile);
+
+            free_struct_pointers(system);
             return 1;
         }
     }
@@ -117,6 +123,18 @@ int main(int argc, char const *argv[])
     if (!outSystem || !outEnergies)
     {
         fprintf(stderr, "\nErrore nell'apertura dei file di output\n\n");
+
+        // "Chiudere" un puntatore null è undefined behaviour, per questo c'è questo controllo
+        if (outSystem)
+        {
+            fclose(outSystem);
+        }
+        if (outEnergies)
+        {
+            fclose(outEnergies);
+        }
+
+        free_struct_pointers(system);
         return 1;
     }
 
@@ -127,6 +145,12 @@ int main(int argc, char const *argv[])
     if (system->acc == NULL || force == NULL)
     {
         fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
+
+        fclose(outSystem);
+        fclose(outEnergies);
+
+        free_struct_pointers(system);
+        free(force); // Liberato in caso l'allocazione fallita sia quella di system->acc
         return 1;
     }
 
@@ -159,6 +183,12 @@ int main(int argc, char const *argv[])
                                                   force, &f_o, &grav_force);
             if (resultCode == -1)
             {
+                fclose(outSystem);
+                fclose(outEnergies);
+
+                free_struct_pointers(system);
+                free(force);
+                free(f_o);
                 return 1;
             }
         }
