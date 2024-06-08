@@ -540,6 +540,11 @@ void print_energies(FILE *outFile, const PhysicalSystem *system)
     fprintf(outFile, "%16.9Lf %16.9Lf %16.9Lf\n", kEnergy, potEnergy, totEnergy);
 }
 
+/**
+ * Funzione che libera tutti i puntatori della struct PhysicalSystem passata in input e poi il puntatore alla struct stessa.
+ *
+ * @param system Puntatore alla struct PhysicalSystem da liberare.
+ */
 void free_struct_pointers(PhysicalSystem *system)
 {
     free(system->masses);
