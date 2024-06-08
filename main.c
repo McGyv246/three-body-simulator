@@ -178,7 +178,7 @@ int main(int argc, char const *argv[])
 
         for (int j = 0; j < system->tdump; j++)
         {
-            int resultCode = velverlet_ndim_npart(system->dt, system->G, system->nBodies, SPATIAL_DIM, system->masses, system->coord, 
+            int resultCode = velverlet_ndim_npart(system->dt, system->G, system->nBodies, SPATIAL_DIM, system->masses, system->coord,
                                                   system->vel, force, &f_o, &grav_force);
             if (resultCode == -1)
             {
@@ -235,7 +235,7 @@ int read_input(FILE *inFile, PhysicalSystem *system)
     */
     if (line[0] == '#')
     {
-        sscanf(line, "%s", str);
+        sscanf(line, "%4s", str);
         if (strncmp(str, "#HDR", 4) == 0)
         {
             long int intRead = -1;
