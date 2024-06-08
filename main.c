@@ -54,8 +54,8 @@ typedef struct
 
 int read_input(FILE *inFile, PhysicalSystem *system);
 void grav_force(const long double *coord, const long double *masses, const long double G, const int nBodies, long double *force);
-long double Ekin(const long double *velVec, const long double *masses, const int nBodies);
-long double Epot(const long double *posVec, const long double *masses, const long double G, const int nBodies);
+long double Ekin(const long double *vel, const long double *masses, const int nBodies);
+long double Epot(const long double *coord, const long double *masses, const long double G, const int nBodies);
 void print_header(FILE *outFile, const PhysicalSystem *system, char *format);
 void print_system(FILE *outFile, const PhysicalSystem *system);
 void print_energies(FILE *outFile, const PhysicalSystem *system);
@@ -235,7 +235,7 @@ int read_input(FILE *inFile, PhysicalSystem *system)
     */
     if (line[0] == '#')
     {
-        sscanf(line, "%4s", str);
+        sscanf(line, "%s", str);
         if (strncmp(str, "#HDR", 4) == 0)
         {
             long int intRead = -1;
@@ -309,7 +309,7 @@ int read_input(FILE *inFile, PhysicalSystem *system)
         system->vel = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
     }
 
-    if (system->masses == NULL || system->coord == NULL || system->vel == NULL)
+    if (!system->masses || !system->coord || !system->vel)
     {
         fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
         return -2;
@@ -347,7 +347,7 @@ int read_input(FILE *inFile, PhysicalSystem *system)
  * @param masses Puntatore al vettore di long double contenente le masse dei corpi nel sistema.
  * @param G Costante di gravitazione considerata per il calcolo della forza gravitazionale.
  * @param nBodies Numero di corpi che compongono il sistema considerato.
- * @param force Puntatore al vettore di long double in cui salvare le forze calcolate.
+ * @param force Puntatore al vettore di long double in cui salvare la risultante delle forze su ciascun corpo.
  */
 void grav_force(const long double *coord, const long double *masses, const long double G, const int nBodies, long double *force)
 {
@@ -380,20 +380,20 @@ void grav_force(const long double *coord, const long double *masses, const long 
 /**
  * Funzione che calcola l'energia cinetica del sistema di un numero di corpi pari a nBodies.
  *
- * @param velVec Puntatore al primo di long double contenente le velocità dei corpi.
+ * @param vel Puntatore al vettore di long double contenente le velocità dei corpi.
  * @param masses Puntatore al vettore di long double contenente le masse dei corpi.
  * @param nBodies Numero intero del numero di corpi del sistema.
  *
  * @return Valore long double dell'energia cinetica.
  */
 
-long double Ekin(const long double *velVec, const long double *masses, const int nBodies)
+long double Ekin(const long double *vel, const long double *masses, const int nBodies)
 {
     long double kinEnergyTot = 0.L;
 
     for (int i = 0; i < nBodies; i++)
     {
-        kinEnergyTot += 0.5L * masses[i] * scal(velVec + SPATIAL_DIM * i, velVec + SPATIAL_DIM * i, SPATIAL_DIM);
+        kinEnergyTot += 0.5L * masses[i] * scal(vel + SPATIAL_DIM * i, vel + SPATIAL_DIM * i, SPATIAL_DIM);
     }
 
     return kinEnergyTot;
@@ -402,21 +402,21 @@ long double Ekin(const long double *velVec, const long double *masses, const int
 /**
  * Funzione che calcola l'energia potenziale del sistema di un numero di corpi pari a nBodies.
  *
- * @param posVec Puntatore al vettore di long double contenente le posizioni dei corpi.
+ * @param coord Puntatore al vettore di long double contenente le coordinate spaziali dei corpi.
  * @param masses Puntatore al vettore di long double contenente le masse dei corpi.
- * @param G costante di gravitazione universale.
+ * @param G costante di gravitazione considerata.
  * @param nBodies Numero intero del numero di corpi del sistema.
  *
  * @return Valore long double dell'energia potenziale
  */
-long double Epot(const long double *posVec, const long double *masses, const long double G, const int nBodies)
+long double Epot(const long double *coord, const long double *masses, const long double G, const int nBodies)
 {
     long double potEnergyTot = 0.L;
     for (int i = 0; i < nBodies; i++)
     {
         for (int j = i + 1; j < nBodies; j++)
         {
-            long double distance = dist((posVec + j * SPATIAL_DIM), (posVec + i * SPATIAL_DIM), SPATIAL_DIM);
+            long double distance = dist(coord + j * SPATIAL_DIM, coord + i * SPATIAL_DIM, SPATIAL_DIM);
             potEnergyTot += -G * masses[i] * masses[j] / distance;
         }
     }
