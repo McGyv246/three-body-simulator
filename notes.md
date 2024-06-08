@@ -20,7 +20,7 @@ Visto che le funzioni geometriche, quelle dell'energia e quelle dell'integrazion
 
 ## Tipo di dato utilizzato
 Abbiamo deciso di utilizzare long double al posto di double per attenuare la fluttuazione sulle ultime cifre decimali stampate dell'energia totale (con 9 cifre decimali di solito non cambia neanche l'ultima cifra).
-Abbiamo però riscontrato un problema: questo funziona soltanto su windows con wsl (nello specifico con processori x86) e non MacOS con processori Arm64. Questo perché mentre con x86 long double è di 128 bit, con Arm64 long double è di 64 bit, esattamente come double normale (si noti che con alcuni processori long double è a 80 bit).
+Abbiamo però riscontrato un problema: questo funziona soltanto su windows con wsl (nello specifico con processori x86) e non MacOS con processori Arm64 (su internet qualcuno sostiene che con linux e Arm64 si possono ottenere gli stessi risultati che con windows e wsl con x86, ma non abbiamo avuto modo di testarlo). Questo perché mentre con x86 long double è di 128 bit, con Arm64 in un sistema MacOS long double è di 64 bit, esattamente come double normale (si noti che con alcuni processori long double è a 80 bit).
 
 Per verificare si provi ad eseguire il seguente codice:
 printf("%lu  %lu\n", sizeof(double), sizeof(long double));
@@ -35,13 +35,13 @@ Abbiamo scritto l'implementazione di velocity verlet in modo che funzioni nel nu
 Strutturarla così (rendendola un po' più specifica del velocity verlet generico, ma comunque generale per sistemi ad nBodies particelle) ha permesso di operare ottimizzazioni nel calcolo della forza (si legga la sezione sul main.c per spiegazione più dettagliata).
 
 Un'altra importante ottimizzazione (sia nella leggibilità del codice che nella performance) è nel calcolo delle posizioni. Aggiornare le posizioni un corpo alla volta avrebbe causato problemi nel calcolo della forza applicata ai corpi successivi, il primo sarebbe stato nell'istante t + dt, gli altri nell'istante t, questo avrebbe prodotto risultati sbagliati.
-Invece di tenere una copia del vettore posizioni, e fare giri poco chiari all'interno del main, per evitare questo problema (che peraltro è comune a ogni tipo di sistema di particelle) abbiamo deciso di fare il calcolo per tutti i corpi contemporaneamente, calcolando la forza per tutti i corpi una volta sola all'inizio e aggiornando tutte le posizioni di conseguenza.
+Invece di tenere una copia del vettore posizioni e fare giri poco chiari all'interno del main (problema che peraltro è comune a ogni tipo di sistema di particelle) abbiamo deciso di fare il calcolo per tutti i corpi contemporaneamente, calcolando la forza per tutti i corpi una volta sola all'inizio e aggiornando tutte le posizioni di conseguenza.
 
 Ultima ottimizzazione è stata quella di usare una variabile cache per la forza del giro precedente da utilizzare come forza vecchia senza doverla calcolare 2 volte ogni giro. Questa variabile è necessariamente esterna in quanto se si fosse dichiarata statica non si sarebbe potuta liberare (viene allocata con malloc alla prima esecuzione dato che usare VLA non è sicuro).
 
-Inoltre abbiamo scritto tutti i parametri necessari e non abbiamo passato la struct physical system perché avrebbe aumentato di
+Inoltre abbiamo scritto tutti i parametri necessari e non abbiamo passato la struct PhysicalSystem perché avrebbe aumentato di
 molto il coupling tra questa funzione e il file main.
-Riconosciamo che la firma della funzione sarebbe stata decisamente più leggibile utilizzando la struct ma dal punto di vista di design non era giustificato. Inoltre in questo modo è molto più chiaro quali parametri vengano modificati dalla funzione e quali siano soltanto un input costante.
+Riconosciamo che la firma della funzione sarebbe stata decisamente più leggibile utilizzando la struct ma dal punto di vista di design non era giustificato. Inoltre in questo modo è molto più chiaro quali parametri vengono modificati dalla funzione e quali sono soltanto un input costante.
 
 
 # Note su main.c
