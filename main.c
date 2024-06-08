@@ -441,8 +441,8 @@ void print_header(FILE *outFile, const PhysicalSystem *system, char *format)
          "If you thought that science was certain - well, that is just an error on your part.  (Richard P. Feynman)",
          "In science there is only physics; all the rest is stamp collecting.  (Lord Kelvin)",
          "Nothing happens until something moves.  (Albert Einstein)",
-         "Not only is the Universe stranger than we think, it is stranger than we can think. (Werner Heisenberg)",
-         "Physics is the only profession in which prophecy is not only accurate but routine. (Neil deGrasse Tyson)"};
+         "Not only is the Universe stranger than we think, it is stranger than we can think.  (Werner Heisenberg)",
+         "Physics is the only profession in which prophecy is not only accurate but routine.  (Neil deGrasse Tyson)"};
 
     int r = rand() % N_QUOTES;
 
