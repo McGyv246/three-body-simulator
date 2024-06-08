@@ -1,3 +1,6 @@
+#ifndef GEOM_H
+#define GEOM_H
+
 /**
  * Funzione che riempie vec_d con il vettore differenza tra vec1 e vec2
  *
@@ -29,3 +32,5 @@ long double dist(const long double *vec1, const long double *vec2, const int dim
  * @return Valore long double risultato dal prodotto scalare
  */
 long double scal(const long double *vec1, const long double *vec2, const int dim);
+
+#endif
