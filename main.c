@@ -25,9 +25,9 @@
 #define N_QUOTES 3
 #endif
 
-/** 
+/**
  * Creazione della struct physicalSystem contenente le variabili di interesse per un sistema ad nBodies corpi soggetti a forze di natura
- * gravitazionale: 
+ * gravitazionale:
  * - nBodies : numero di corpi;
  * - G : costante di gravitazione;
  * - dt : intervallo di integrazione (vedere integrator.c);
@@ -37,7 +37,7 @@
  * - coord : puntatore a cui assegnare le coordinate in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante;
  * - vel : puntatore a cui assegnare le velocità in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante;
  * - acc : puntatore a cui assegnare le accelerazioni in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante.
- * 
+ *
  * NOTA : le accelerazioni sono calcolate solo prima di stampare nei file di output.
  */
 struct physicalSystem
@@ -201,8 +201,8 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 
     Abbiamo optato per questa versione non molto elegante perché, anche utilizzando un vettore contenente i nomi degli header
     e un vettore in cui inserire i valori letti nelle posizioni corrispondenti, ad un certo punto si sarebbe dovuto assegnare
-    i valori ricavati alla struct con un codice simile. La nostra versione è inoltre più facilmente mantenibile: aggiungendo un header 
-    basterebbe aggiungere un if qui e aggiornare la macro N_HEADERS, mentre, nel caso alternativo spiegato sopra, oltre alla macro 
+    i valori ricavati alla struct con un codice simile. La nostra versione è inoltre più facilmente mantenibile: aggiungendo un header
+    basterebbe aggiungere un if qui e aggiornare la macro N_HEADERS, mentre, nel caso alternativo spiegato sopra, oltre alla macro
     bisognerebbe anche modificare il vettore con i nomi degli header e la funzione che assegna le variabili alla struct.
     Quell'approccio alternativo avrebbe potuto creare problemi anche nel casting da long double a integer delle variabili intere lette,
     con il rischio di troncamenti sconvenienti.
@@ -314,7 +314,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 }
 
 /**
- * Funzione che, date le posizioni di un numero di corpi specificato in un dato istante, calcola le accelerazioni gravitazionali
+ * Funzione che, date le posizioni di un numero di corpi specificato in un dato istante, calcola le forze gravitazionali
  * agenti tra questi nel dato istante.
  *
  * @param coord Puntatore al vettore di long double contenente le posizioni dei corpi un corpo alla volta: x11, x12, ..., x21, ...
@@ -427,29 +427,29 @@ void print_header(FILE *outFile, struct physicalSystem *system, char *format)
         fprintf(outFile, "%Lf ", system->masses[i]);
     }
     fprintf(outFile, "\n");
-    
-    //controlli che scrivono il format dei dati nel file
+
+    // controlli che scrivono il format dei dati nel file
     fprintf(outFile, "#format:\t ");
-    if(strncmp(format, "system", 6) == 0)
+    if (strncmp(format, "system", 6) == 0)
     {
-        fprintf(outFile, "time\t coords: (" );
-        for(int i = 0; i<SPATIAL_DIM; i++)
+        fprintf(outFile, "time\t coords: (");
+        for (int i = 0; i < SPATIAL_DIM; i++)
         {
-            fprintf(outFile, " x%d",i);
+            fprintf(outFile, " x%d", i);
         }
         fprintf(outFile, ")\t velocities: (");
-        for(int i = 0; i<SPATIAL_DIM; i++)
+        for (int i = 0; i < SPATIAL_DIM; i++)
         {
-            fprintf(outFile, " v%d",i);
+            fprintf(outFile, " v%d", i);
         }
         fprintf(outFile, ")\t accelerations: (");
-        for(int i = 0; i<SPATIAL_DIM; i++)
+        for (int i = 0; i < SPATIAL_DIM; i++)
         {
-            fprintf(outFile, " a%d",i);
+            fprintf(outFile, " a%d", i);
         }
         fprintf(outFile, ")\n");
     }
-    else if(strncmp(format, "energies", 8) == 0)
+    else if (strncmp(format, "energies", 8) == 0)
     {
         fprintf(outFile, "kinetic energy\t potential energy\t total energy\n");
     }
