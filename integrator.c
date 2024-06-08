@@ -7,10 +7,10 @@ int velverlet_ndim_npart(const long double dt, const long double forceConst, con
     // Questo permette di non sapere come va inizializzata la variabile da fuori,
     // basta inizializzare un puntatore a long double come NULL e poi passare
     // un puntatore a quel puntatore.
-    if (*f_o == NULL)
+    if (!*f_o)
     {
         *f_o = (long double *)malloc(sizeof(long double) * spatialDim * nBodies);
-        if (*f_o == NULL)
+        if (!*f_o)
         {
             fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
             return -1;
@@ -43,14 +43,4 @@ int velverlet_ndim_npart(const long double dt, const long double forceConst, con
     }
 
     return 0;
-}
-
-// FUNZIONE DI TEST, DA RIMUOVERE
-void f_3d_nBodies(long double *coords, long double *force, int nBodies)
-{
-    int spatialDim = 3;
-    for (int i = 0; i < spatialDim * nBodies; i++)
-    {
-        *(force + i) = -*(coords + i);
-    }
 }

@@ -1,10 +1,9 @@
 # Struttura codice
-In geom.c abbiamo inserito le funzioni geometriche ved_diff, dist e scal.
+In geom.c abbiamo inserito le funzioni geometriche vec_diff, dist e scal.
 In integrator.c abbiamo inserito soltanto l'implementazione di velocity verlet.
 In main.c abbiamo inserito la lettura dell'input, la scrittura dell'output, le funzioni di calcolo della forza e dell'energia e il codice che orchestra l'esecuzione di tutto il programma.
 
-Per rendere il programma generico in modo da poter prendere in input masse diverse abbiamo aggiunto nei file di input una colonna dopo il tempo e prima delle coordinate che contiene la massa del corpo in quella riga (il formato quindi è "idx m x y z vx vy vz" nel caso di 3 dimensioni).
-
+Per rendere il programma generico in modo da poter prendere in input masse diverse abbiamo aggiunto nei file di input, dopo il tempo e prima delle coordinate, una colonna che contiene la massa del corpo in quella riga (il formato quindi è "idx m x y z vx vy vz" nel caso di 3 dimensioni).
 
 # Note generali
 Il programma è stato strutturato per funzionare ad un numero di corpi arbitrario (specificato nel file di input al programma) e anche in un numero di dimensioni arbitrario (modificabile tramite la macro SPATIAL_DIM).
@@ -21,12 +20,12 @@ Visto che le funzioni geometriche, quelle dell'energia e quelle dell'integrazion
 
 ## Tipo di dato utilizzato
 Abbiamo deciso di utilizzare long double al posto di double per attenuare la fluttuazione sulle ultime cifre decimali stampate dell'energia totale (con 9 cifre decimali di solito non cambia neanche l'ultima cifra).
-Abbiamo però riscontrato un problema: questo funziona soltanto su windows con wsl (nello specifico con processori x86) e non MacOS con processori Arm64. Questo perché il mentre con x86 long double è di 128 bit, con Arm64 long double è di 64 bit, esattamente come double normale (si noti che con alcuni processori long double è a 80 bit).
+Abbiamo però riscontrato un problema: questo funziona soltanto su windows con wsl (nello specifico con processori x86) e non MacOS con processori Arm64. Questo perché mentre con x86 long double è di 128 bit, con Arm64 long double è di 64 bit, esattamente come double normale (si noti che con alcuni processori long double è a 80 bit).
 
 Per verificare si provi ad eseguire il seguente codice:
 printf("%lu  %lu\n", sizeof(double), sizeof(long double));
 
-In base a quanto trovato su internet l'unico modo per aggirare questa limitazione sarebbero delle librerie che fanno simulazioni lato software, però molto più lente rispetto al supporto nativo da parte dell'hardware.
+In base a quanto trovato su internet l'unico modo per aggirare questa limitazione sarebbero delle librerie che fanno simulazioni lato software, che risultano però molto più lente rispetto al supporto nativo da parte dell'hardware.
 
 La differenza purtroppo è notevole. Utilizzando per esempio input_2.dat con long double su x86 si ottiene che la prima energia totale stampata è -2.085220066, mentre l'ultima (alla riga 100005 del file di output) è -2.085220066 (uguale), invece, su Arm64, la prima è sempre -2.085220066, mentre l'ultima è -2.085220034 (le ultime 2 cifre significative sono cambiate).
 
@@ -35,7 +34,7 @@ La differenza purtroppo è notevole. Utilizzando per esempio input_2.dat con lon
 Abbiamo scritto l'implementazione di velocity verlet in modo che funzioni nel numero specificato di dimensioni per il numero specificato di corpi contemporaneamente.
 Strutturarla così (rendendola un po' più specifica del velocity verlet generico, ma comunque generale per sistemi ad nBodies particelle) ha permesso di operare ottimizzazioni nel calcolo della forza (si legga la sezione sul main.c per spiegazione più dettagliata).
 
-Un'altra importante ottimizzazione (sia nella leggibilità del codice che nella performance) è nel calcolo delle posizioni. Aggiornando le posizioni un corpo alla volta avrebbe causato problemi nel calcolo della forza applicata ai corpi successivi, il primo sarebbe stato nell'istante t + dt, gli altri nell'istante t, questo avrebbe prodotto risultati sbagliati.
+Un'altra importante ottimizzazione (sia nella leggibilità del codice che nella performance) è nel calcolo delle posizioni. Aggiornare le posizioni un corpo alla volta avrebbe causato problemi nel calcolo della forza applicata ai corpi successivi, il primo sarebbe stato nell'istante t + dt, gli altri nell'istante t, questo avrebbe prodotto risultati sbagliati.
 Invece di tenere una copia del vettore posizioni, e fare giri poco chiari all'interno del main, per evitare questo problema (che peraltro è comune a ogni tipo di sistema di particelle) abbiamo deciso di fare il calcolo per tutti i corpi contemporaneamente, calcolando la forza per tutti i corpi una volta sola all'inizio e aggiornando tutte le posizioni di conseguenza.
 
 Ultima ottimizzazione è stata quella di usare una variabile cache per la forza del giro precedente da utilizzare come forza vecchia senza doverla calcolare 2 volte ogni giro. Questa variabile è necessariamente esterna in quanto se si fosse dichiarata statica non si sarebbe potuta liberare (viene allocata con malloc alla prima esecuzione dato che usare VLA non è sicuro).
