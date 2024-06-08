@@ -11,8 +11,7 @@
  * @param spatialDim Dimensione spaziale in cui si sta considerando il sistema.
  * @param masses Puntatore ad un array di long double di nBodies elementi contenente le masse dei corpi considerati.
  * @param coord Puntatore ad un array di long double contenente spatialDim * nBodies elementi che corrispondono alle spatialDim componenti
- * delle posizioni di nBodies corpi.
- * La funzione lo aggiorna con le coordinate nuove.
+ * delle posizioni di nBodies corpi. La funzione lo aggiorna con le coordinate nuove.
  * @param vel Puntatore ad un array di long double contenente spatialDim * nBodies elementi che corrispondono alle spatialDim componenti
  * delle velocità di nBodies corpi. La funzione lo aggiorna con le velocità nuove.
  * @param force Puntatore ad un array di long double di spatialDim * nBodies elementi che corrispondono alle spatialDim componenti delle
