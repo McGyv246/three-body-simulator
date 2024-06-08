@@ -21,7 +21,7 @@
 
 #ifdef FUNNY
 #include <time.h>
-#define N_QUOTES 3
+#define N_QUOTES 7
 #endif
 
 /**
@@ -438,7 +438,11 @@ void print_header(FILE *outFile, const PhysicalSystem *system, char *format)
     char *quotes[N_QUOTES] =
         {"Above all, don't fear difficult moments. The best comes from them.  (Rita Levi-Montalcini)",
          "In physics, you don't have to go around making trouble for yourself. Nature does it for you.  (Frank Wilczek)",
-         "If you thought that science was certain - well, that is just an error on your part.  (Richard P. Feynman)"};
+         "If you thought that science was certain - well, that is just an error on your part.  (Richard P. Feynman)",
+         "In science there is only physics; all the rest is stamp collecting.  (Lord Kelvin)",
+         "Nothing happens until something moves.  (Albert Einstein)",
+         "Not only is the Universe stranger than we think, it is stranger than we can think. (Werner Heisenberg)",
+         "Physics is the only profession in which prophecy is not only accurate but routine. (Neil deGrasse Tyson)"};
 
     int r = rand() % N_QUOTES;
 
