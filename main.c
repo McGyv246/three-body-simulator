@@ -60,6 +60,7 @@ long double Epot(const long double *posVec, const long double *masses, const lon
 void print_header(FILE *outFile, struct physicalSystem *system, char *format);
 void print_system(FILE *outFile, struct physicalSystem *system);
 void print_energies(FILE *outFile, struct physicalSystem *system);
+void free_struct_pointers(struct physicalSystem *system);
 
 int main(int argc, char const *argv[])
 {
@@ -166,11 +167,7 @@ int main(int argc, char const *argv[])
     fclose(outSystem);
     fclose(outEnergies);
 
-    free(system->masses);
-    free(system->coord);
-    free(system->vel);
-    free(system->acc);
-    free(system);
+    free_struct_pointers(system);
     free(force);
     free(f_o);
 
@@ -508,4 +505,13 @@ void print_energies(FILE *outFile, struct physicalSystem *system)
     totEnergy = kEnergy + potEnergy;
 
     fprintf(outFile, "%16.9Lf %16.9Lf %16.9Lf\n", kEnergy, potEnergy, totEnergy);
+}
+
+void free_struct_pointers(struct physicalSystem *system)
+{
+    free(system->masses);
+    free(system->coord);
+    free(system->vel);
+    free(system->acc);
+    free(system);
 }
