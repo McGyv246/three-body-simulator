@@ -453,6 +453,10 @@ void print_header(FILE *outFile, struct physicalSystem *system, char *format)
     {
         fprintf(outFile, "kinetic energy\t potential energy\t total energy\n");
     }
+    else
+    {
+        fprintf(stderr, "\nFormato specificato non supportato. La riga di formato verrà lasciata vuota.\n\n");
+    }
 }
 
 /**
