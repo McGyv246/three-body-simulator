@@ -12,7 +12,7 @@ Il programma è stato strutturato per funzionare ad un numero di corpi arbitrari
 Abbiamo fatto dei test per correggere i valori negli header dei file in input per ottenere risultati migliori. In tutti e 3 i file di input forniti il dt è adatto per contenere gli errori di integrazione.
 In particolare:
 - input_1.dat con i parametri specificati dà una traiettoria molto "spigolosa". Per ottenere una curva che descrive con maggiore precisione la traiettoria basta dividere tdump per 100 e T per 10. Questo è lecito in quanto con i dati attuali il programma completa svariati periodi dell'orbita.
-- input_2.dat non presenta i valori delle velocità nello schema proposto. In particolare la velocità x del primo corpo. Comunque anche in un tempo di esecuzione più lungo del 50% rispetto a quello specificato in T nel file il sistema risulta abbastanza stabile (l'energia totale ha delle piccole oscillazioni). Inoltre i valori di dt e tdump sono adatti per descrivere con precisione la traiettoria (al limite si potrebbe aumentare un po' tdump per diminuire il numero di righe di output). Nel file input_2_2.dat abbiamo modificato la velocità del x del primo corpo in modo da rispettare lo schema proposto (gli altri parametri sono invariati).
+- input_2.dat (corretto con l'input nello schema proposto) ha valori di dt e tdump sono adatti per descrivere con precisione la traiettoria (al limite si potrebbe aumentare un po' tdump per diminuire il numero di righe di output).
 - input_3.dat con i parametri specificati non porta a termine un periodo dell'orbita. Raddoppiando sia tdump sia T si ottiene lo stesso numero di righe e un periodo intero.
 
 ## Utilizzo malloc e vettori
