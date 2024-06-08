@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <limits.h>
 
 #include "geom.h"
 #include "integrator.h"
@@ -26,7 +25,7 @@
 #endif
 
 /**
- * Creazione della struct physicalSystem contenente le variabili di interesse per un sistema ad nBodies corpi soggetti a forze di natura
+ * Creazione della struct PhysicalSystem contenente le variabili di interesse per un sistema ad nBodies corpi soggetti a forze di natura
  * gravitazionale:
  * - nBodies : numero di corpi;
  * - G : costante di gravitazione;
@@ -40,7 +39,7 @@
  *
  * NOTA : le accelerazioni sono calcolate solo prima di stampare nei file di output.
  */
-struct physicalSystem
+typedef struct
 {
     int nBodies;
     long double G;
@@ -51,23 +50,23 @@ struct physicalSystem
     long double *coord;
     long double *vel;
     long double *acc;
-};
+} PhysicalSystem;
 
-int read_input(FILE *inFile, struct physicalSystem *system);
+int read_input(FILE *inFile, PhysicalSystem *system);
 void grav_force(const long double *coord, const long double *masses, const long double G, const int nBodies, long double *force);
 long double Ekin(const long double *velVec, const long double *masses, const int nBodies);
 long double Epot(const long double *posVec, const long double *masses, const long double G, const int nBodies);
-void print_header(FILE *outFile, struct physicalSystem *system, char *format);
-void print_system(FILE *outFile, struct physicalSystem *system);
-void print_energies(FILE *outFile, struct physicalSystem *system);
-void free_struct_pointers(struct physicalSystem *system);
+void print_header(FILE *outFile, PhysicalSystem *system, char *format);
+void print_system(FILE *outFile, PhysicalSystem *system);
+void print_energies(FILE *outFile, PhysicalSystem *system);
+void free_struct_pointers(PhysicalSystem *system);
 
 int main(int argc, char const *argv[])
 {
     FILE *inFile;
     int ans;
 
-    struct physicalSystem *system = (struct physicalSystem *)malloc(sizeof(struct physicalSystem));
+    PhysicalSystem *system = (PhysicalSystem *)malloc(sizeof(PhysicalSystem));
     system->nBodies = -1;
     system->G = -1.L;
     system->dt = -1.L;
@@ -212,7 +211,7 @@ int main(int argc, char const *argv[])
  *
  * @return -1 per End of File; -2 in caso di errore; 0 di default.
  */
-int read_input(FILE *inFile, struct physicalSystem *system)
+int read_input(FILE *inFile, PhysicalSystem *system)
 {
     char line[MAX_LEN], str[5], var[6];
 
@@ -433,7 +432,7 @@ long double Epot(const long double *posVec, const long double *masses, const lon
  * @param format Stringa indicante il tipo di format scelto ("system" o "energies" a seconda che si vogliano stampare la traiettoria
  * del sistema o le energie del sistema).
  */
-void print_header(FILE *outFile, struct physicalSystem *system, char *format)
+void print_header(FILE *outFile, PhysicalSystem *system, char *format)
 {
 #ifdef FUNNY
     char *quotes[N_QUOTES] =
@@ -493,7 +492,7 @@ void print_header(FILE *outFile, struct physicalSystem *system, char *format)
  * @param outFile Puntatore al file in cui stampare posizioni, velocità e accelerazioni del sistema.
  * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema.
  */
-void print_system(FILE *outFile, struct physicalSystem *system)
+void print_system(FILE *outFile, PhysicalSystem *system)
 {
     static double t = 0.;
 
@@ -526,7 +525,7 @@ void print_system(FILE *outFile, struct physicalSystem *system)
  * @param outFile Puntatore al file in cui stampare energia cinetica, potenziale e totale del sistema in un dato istante.
  * @param system Puntatore alla struct contenente tutte le variabili in gioco nel sistema.
  */
-void print_energies(FILE *outFile, struct physicalSystem *system)
+void print_energies(FILE *outFile, PhysicalSystem *system)
 {
     long double kEnergy, potEnergy, totEnergy;
 
@@ -537,7 +536,7 @@ void print_energies(FILE *outFile, struct physicalSystem *system)
     fprintf(outFile, "%16.9Lf %16.9Lf %16.9Lf\n", kEnergy, potEnergy, totEnergy);
 }
 
-void free_struct_pointers(struct physicalSystem *system)
+void free_struct_pointers(PhysicalSystem *system)
 {
     free(system->masses);
     free(system->coord);
