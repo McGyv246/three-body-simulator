@@ -31,7 +31,7 @@
  * - nBodies : numero di corpi;
  * - G : costante di gravitazione;
  * - dt : intervallo di integrazione (vedere integrator.c);
- * - tdump : numero di integrazioni ogni quanto stampare nei file di output;
+ * - tdump : numero di integrazioni ogni cui stampare nei file di output;
  * - T : numero totale di integrazioni da eseguire (il formato long int consente di evitare eventuali errori nella lettura di T);
  * - masses : puntatore a cui assegnare le masse dei corpi del sistema;
  * - coord : puntatore a cui assegnare le coordinate in SPATIAL_DIM dimensioni dei corpi del sistema in un dato istante;
@@ -142,7 +142,7 @@ int main(int argc, char const *argv[])
     long double *force, *f_o = NULL;
     force = (long double *)malloc(system->nBodies * SPATIAL_DIM * sizeof(long double));
 
-    if (system->acc == NULL || force == NULL)
+    if (!system->acc || !force)
     {
         fprintf(stderr, "\nErrore nell'allocazione dinamica della memoria.\n\n");
 
@@ -154,7 +154,7 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    // calcolo la forza iniziale per ottenere l'accelerazione iniziale
+    // calcolo la forza iniziale per ottenere l'accelerazione da stampare nell'istante iniziale
     grav_force(system->coord, system->masses, system->G, system->nBodies, force);
 
     // stampa dell'header nei due file di output
@@ -170,7 +170,7 @@ int main(int argc, char const *argv[])
         {
             for (int k = 0; k < SPATIAL_DIM; k++)
             {
-                system->acc[k + SPATIAL_DIM * j] = force[k + SPATIAL_DIM * j] / system->masses[k];
+                system->acc[k + SPATIAL_DIM * j] = force[k + SPATIAL_DIM * j] / system->masses[j];
             }
         }
 
@@ -179,8 +179,8 @@ int main(int argc, char const *argv[])
 
         for (int j = 0; j < system->tdump; j++)
         {
-            int resultCode = velverlet_ndim_npart(system->dt, system->G, system->nBodies, SPATIAL_DIM, system->masses, system->coord, system->vel,
-                                                  force, &f_o, &grav_force);
+            int resultCode = velverlet_ndim_npart(system->dt, system->G, system->nBodies, SPATIAL_DIM, system->masses, system->coord, 
+                                                  system->vel, force, &f_o, &grav_force);
             if (resultCode == -1)
             {
                 fclose(outSystem);
@@ -216,7 +216,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
 {
     char line[MAX_LEN], str[5], var[6];
 
-    if (fgets(line, MAX_LEN, inFile) == NULL)
+    if (!fgets(line, MAX_LEN, inFile))
     {
         return -1;
     }
@@ -237,7 +237,7 @@ int read_input(FILE *inFile, struct physicalSystem *system)
     if (line[0] == '#')
     {
         sscanf(line, "%4s", str);
-        if (strcmp(str, "#HDR") == 0)
+        if (strncmp(str, "#HDR", 4) == 0)
         {
             long int intRead = -1;
             long double doubleRead = -1.L;
