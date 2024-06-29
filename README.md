@@ -1,6 +1,43 @@
-# Informazioni di base
+# Three body simulator
 
-- Il main è bloccato, questo significa che se fate dei commit in locale poi non potete pushare le modifiche direttamente sul ramo main. Non fate mai commit sul main perché poi ci sono problemi. Per fare le modifiche dovete creare un ramo (scritto tutti in minuscolo, con nome indicativo di quello che state per implementare) e poi fare pull request su GitHub per fare il merge delle modifiche sul ramo main.
-- Ogni volta che iniziate a lavorare usare il comando `git pull` sul vostro ramo e sul ramo main. In caso siano state fatte delle modifiche sul main dopo che voi avete staccato il vostro ramo dovete fare il merge NEL vostro ramo. Per farlo andate nel vostro ramo e usate il comando `git merge origin/main`. Questo va fatto anche in caso GitHub dica che non si può mergiare la pull request per via di conflitti.
-- Gli eseguibili non devono essere caricati su github perché se no si creano casini dato che programmiamo da sistemi operativi diversi. Gli eseguibili chiamateli sempre con estensione .exe oppure .x oppure con lo stesso nome del file e senza estensione in modo che git li riconosca e li ignori (l'ho configurato per fare così).
-- Finché non testate il codice per me NON FUNZIONA. Non integrate delle modifiche nel main se non sono state testate, altrimenti poi trovare bug diventa molto più difficile. Se, come nello scorso compitino, mettete un commento con i dati e i risultati di test so che lo avete testato e in caso di modifiche lo si può fare facilmente. Tra l'altro adesso che lavoriamo con file diversi magari si può mettere un main all'interno di ciascun file per testare le funzioni contenute al suo interno (non sono sicuro che si possa fare).
+This project calculates trajectories of 3 (or more) bodies under gravitational force.
+
+## Motivation
+
+This project was created by [McGyv246](https://github.com/McGyv246), [CarloDegasperi](https://github.com/CarloDegasperi) and [lorenzob0nati](https://github.com/lorenzob0nati) as school project for physics degree at Università degli studi di Trento.
+
+## Usage guide
+
+This program needs an input file with the correct structure. See [input_1.dat](input_1.dat) as example.
+
+These are the meaning of the headers:
+- N: (integer) number of the bodies
+- G: (double) gravitational constant
+- dt: (double) integration interval
+- tdump: (integer) how many integrations the program should do before printing the state of the system
+- T: (integer) total number of integrations the program should do
+
+Note that the program has been built to work with an arbitrary number of bodies AND an abitrary number of dimensions. Set up your input file accordingly (to edit the number of dimensions the program works with you will also need to update the SPATIAL_DIM macro in [main.c](main.c) file).
+
+So yes, if for some reason you need to simulate how 10 planets would in a 10-dimensional space, this program can do that.
+
+Compile and run with these commands (insert correct input file name):
+```
+$ gcc -std=c99 -Wall -Wpedantic -O3 main.c integrator.c geom.c -o main.exe -lm
+$ ./main.exe input_1.dat
+```
+
+Output will be printed in 2 files:
+
+- `traj.dat` that will contain the trajectories for each instant
+- `energies.dat` that will contain the energies for each instant
+
+## Structure
+
+- [geom.c](geom.c) contains some geometric functions
+- [integrator.c](integrator.c) contains the integration function
+- [main.c](main.c) orchestrates the execution of the whole program (it reads input, executes integrations, prints output etc.)
+
+Comments in [notes.md](notes.md) file and in the code served as clarification for the person who graded the project and should not be considered.
+
+[correzione](correzione) folder contains the graded version of the code.
