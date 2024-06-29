@@ -38,6 +38,6 @@ Output will be printed in 2 files:
 - [integrator.c](integrator.c) contains the integration function
 - [main.c](main.c) orchestrates the execution of the whole program (it reads input, executes integrations, prints output etc.)
 
-Comments in [notes.md](notes.md) file and in the code served as clarification for the person who graded the project and should not be considered.
+Comments in [notes.md](notes.md) file and in the code served as clarification for the person who graded the project and should not be considered. Note that docstrings are in written in italian.
 
 [correzione](correzione) folder contains the graded version of the code.
